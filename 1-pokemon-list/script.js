@@ -5,8 +5,29 @@ const pokemonContainer = document.querySelector("#pokemon-container");
 const savedPokemonContainer = document.querySelector(
   "#saved-pokemon-container"
 );
-let allPokemons = [];
 
+const typeColors = {
+  normal: "#A8A77A",
+  fire: "#EE8130",
+  water: "#6390F0",
+  electric: "#F7D02C",
+  grass: "#7AC74C",
+  ice: "#96D9D6",
+  fighting: "#C22E28",
+  poison: "#A33EA1",
+  ground: "#E2BF65",
+  flying: "#A98FF3",
+  psychic: "#F95587",
+  bug: "#A6B91A",
+  rock: "#B6A136",
+  ghost: "#735797",
+  dragon: "#6F35FC",
+  dark: "#705746",
+  steel: "#B7B7CE",
+  fairy: "#D685AD",
+};
+
+let allPokemons = [];
 // fetch pokemons
 async function fetchPokemons() {
   try {
@@ -37,10 +58,10 @@ async function updatePokemonList(pokemonList) {
     //lager kort med styling
     const card = document.createElement("div");
     card.innerHTML = `<p style="margin: 0;">${pokemonList[i].type}</p><img src=" ${pokemonList[i].imgUrl}" width="100px" /><h3 style="margin: 20px 0;">${pokemonList[i].name}</h3>  `;
-    card.style.backgroundColor = "#f6da6c";
+    card.style.backgroundColor = typeColors[pokemonList[i].type.toLowerCase()];
     card.style.padding = "20px";
     card.style.boxShadow = "rgba(0, 0, 0, 0.24) 0px 3px 8px";
-    card.style.color = "#3a57a1";
+    card.style.color = "white";
     card.style.display = "flex";
     card.style.flexDirection = "column";
     card.style.alignItems = "center";

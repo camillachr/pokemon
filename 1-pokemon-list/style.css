@@ -56,9 +56,10 @@ h3 {
 }
 
 .btn {
-  background-color: #f7c505;
-  color: #3a57a1;
+  background-color: black;
+  color: white;
   border: none;
+  font-weight: bold;
   box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
   width: 70px;
   padding: 5px;
