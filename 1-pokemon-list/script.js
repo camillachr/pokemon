@@ -9,14 +9,18 @@ let allPokemons = [];
 // fetch pokemons
 async function fetchPokemons() {
   try {
-    const randomNumber = Math.floor(Math.random() * 1300);
-    const response = await fetch(
-      `https://pokeapi.co/api/v2/pokemon/${randomNumber}`
-    );
-    const data = await response.json();
-    const results = data.results;
+    for (let i = 1; i < 51; i++) {
+      const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${i}`);
+      const data = await response.json();
+      const pokemon = {
+        name: data.name,
+        type: data.types[0].type.name,
+        imgUrl: data.sprites.front_default,
+      };
 
-    await fetchPokemonDetails(results);
+      allPokemons.push(pokemon);
+    }
+
     updatePokemonList(allPokemons);
   } catch (error) {
     console.error("Kunne ikke hente pokemons", error);
@@ -24,27 +28,6 @@ async function fetchPokemons() {
 }
 
 fetchPokemons();
-
-async function fetchPokemonDetails(results) {
-  try {
-    for (let i = 0; i < results.length; i++) {
-      const pokemonResponse = await fetch(results[i].url);
-      const pokemonData = await pokemonResponse.json();
-
-      let pokemonWithDetails = {
-        name: pokemonData.name,
-        type: pokemonData.types[0].type.name,
-        imgUrl: pokemonData.sprites.front_default,
-      };
-
-      allPokemons.push(pokemonWithDetails);
-    }
-
-    console.log("Ferdig med detaljer", allPokemons);
-  } catch (error) {
-    console.log("Kunne ikke hente pokemon-detaljer", error);
-  }
-}
 
 // vis pokemons på siden
 async function updatePokemonList(pokemonList) {
