@@ -8,13 +8,38 @@
   </head>
   <body>
     <h1>Pokemon</h1>
-    <h2>Gotta fetch 'em all! ;D</h2>
-    <div id="filter-container">Filter</div>
-    <div id="pokemon-container">Pokemon container</div>
-
-    <h2>Dine lagrede pokemons</h2>
-    <div id="saved-pokemon-container">Lagrede pokemons</div>
-
+    <h2>Gotta <i>fetch</i> 'em all!</h2>
+    <div id="filter-container">
+      <h3>Velg type</h3>
+      <div id="filter-buttons">
+        <button class="filter-btn" data-type="normal">Normal</button>
+        <button class="filter-btn" data-type="fire">Fire</button>
+        <button class="filter-btn" data-type="water">Water</button>
+        <button class="filter-btn" data-type="grass">Grass</button>
+        <button class="filter-btn" data-type="flying">Flying</button>
+        <button class="filter-btn" data-type="fighting">Fighting</button>
+        <button class="filter-btn" data-type="poison">Poison</button>
+        <button class="filter-btn" data-type="electric">Electric</button>
+        <button class="filter-btn" data-type="ground">Ground</button>
+        <button class="filter-btn" data-type="rock">Rock</button>
+        <button class="filter-btn" data-type="psychic">Psychic</button>
+        <button class="filter-btn" data-type="ice">Ice</button>
+        <button class="filter-btn" data-type="bug">Bug</button>
+        <button class="filter-btn" data-type="ghost">Ghost</button>
+        <button class="filter-btn" data-type="steel">Steel</button>
+        <button class="filter-btn" data-type="dragon">Dragon</button>
+        <button class="filter-btn" data-type="dark">Dark</button>
+        <button class="filter-btn" data-type="fairy">Fairy</button>
+      </div>
+    </div>
+    <div class="wrapper">
+      <p id="message"></p>
+      <div id="pokemon-container"></div>
+      <div class="saved-pokemons-wrapper">
+        <h2>Dine lagrede pokemons</h2>
+        <div id="saved-pokemon-container"></div>
+      </div>
+    </div>
     <script src="/1-pokemon-list/script.js"></script>
   </body>
 </html>

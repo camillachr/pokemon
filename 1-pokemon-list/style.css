@@ -1,45 +1,78 @@
 body {
   background-color: #f7c505;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
+
   color: #3a57a1;
   font-family: "Trebuchet MS", "Lucida Sans Unicode";
+}
+
+.wrapper {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
 }
 
 h1 {
   font-size: 3rem;
   margin: 10px;
+  text-align: center;
 }
 
-h2 {
+h2,
+h3 {
   margin: 10px;
+  text-align: center;
 }
 
 #filter-container {
-  background-color: azure;
+  background-color: #f6da6c;
+  padding: 10px;
+}
+
+#filter-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  padding: 20px;
 }
 
 #pokemon-container {
+  flex: 60;
   display: flex;
-  gap: 50px;
+  gap: 30px;
   flex-wrap: wrap;
   justify-content: center;
+}
+.saved-pokemons-wrapper {
+  border: solid 2px #3a57a1;
+  flex: 40;
 }
 
 #saved-pokemon-container {
   display: flex;
-  gap: 50px;
+  gap: 30px;
   flex-wrap: wrap;
   background-color: #f6da6c;
 }
 
 .btn {
+  background-color: #f7c505;
+  color: #3a57a1;
+  border: none;
+  box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+  width: 70px;
+  padding: 5px;
+}
+
+.filter-btn {
   background-color: #3a57a1;
   color: white;
   border: none;
+  box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
   width: 70px;
   padding: 5px;
-  margin: 0 2px 0;
+}
+
+.active {
+  background-color: black;
 }
