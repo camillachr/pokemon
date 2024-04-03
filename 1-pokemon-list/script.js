@@ -1,5 +1,6 @@
 const filterContainer = document.querySelector("#filter-container");
 const filterButtons = document.querySelectorAll(".filter-btn");
+let filterIsActive = false;
 const pokemonContainer = document.querySelector("#pokemon-container");
 const savedPokemonContainer = document.querySelector(
   "#saved-pokemon-container"
@@ -20,7 +21,6 @@ async function fetchPokemons() {
 
       allPokemons.push(pokemon);
     }
-
     updatePokemonList(allPokemons);
   } catch (error) {
     console.error("Kunne ikke hente pokemons", error);
@@ -77,19 +77,24 @@ filterButtons.forEach((button) => {
     const message = document.querySelector("#message");
     message.innerHTML = "";
 
-    //markere den aktive filter-knappen
-    toggleActiveButton(filterButtons, button);
+    //selve filtreringen, sjekker om filteret ikke allerede er aktivt på DENNE knappen
+    if (!button.classList.contains("active")) {
+      filterIsActive = true;
+      toggleActiveButton(filterButtons, button);
+      const type = button.dataset.type;
+      const filteredPokemons = allPokemons.filter(
+        (pokemon) => pokemon.type == type
+      );
+      updatePokemonList(filteredPokemons);
 
-    //selve filtreringen
-    const type = button.dataset.type;
-    const filteredPokemons = allPokemons.filter(
-      (pokemon) => pokemon.type == type
-    );
-    updatePokemonList(filteredPokemons);
-
-    //Feilhåndtering dersom ingen treff
-    if (filteredPokemons.length == 0) {
-      message.innerHTML = `Beklager, finner ingen Pokemons av typen ${type}.`;
+      //Feilhåndtering dersom ingen treff
+      if (filteredPokemons.length == 0) {
+        message.innerHTML = `Beklager, finner ingen Pokemons av typen ${type}.`;
+      }
+    } else {
+      filterIsActive = false;
+      button.classList.remove("active");
+      updatePokemonList(allPokemons);
     }
   });
 });
