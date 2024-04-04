@@ -141,19 +141,27 @@ async function showPokemons(pokemonList, container) {
 async function deletePokemonFromAll(index) {
   const deletedPokemon = allPokemons[index];
 
-  //finner evt index i lagrede pokemons
-  const duplicateIndex = savedPokemons.findIndex(
+  // sletter evt fra savedPokemons
+  const duplicateInSavedIndex = savedPokemons.findIndex(
     (pokemon) =>
       pokemon.name === deletedPokemon.name &&
       pokemon.type === deletedPokemon.type
   );
 
-  // (.findIndex returnerer -1 hvis den IKKE finner duplikat)
-  // sletter fra lagrede pokemons, hvis den finnes der
-  if (duplicateIndex !== -1) {
-    savedPokemons.splice(duplicateIndex, 1);
-    updateLocalStorage("savedPokemons", savedPokemons);
-    showPokemons(savedPokemons, savedPokemonContainer);
+  if (duplicateInSavedIndex !== -1) {
+    removePokemonFromSaved(duplicateInSavedIndex);
+  }
+
+  // sletter evt fra myPokemons
+  const duplicateInMyPokemonsIndex = myPokemons.findIndex(
+    (pokemon) =>
+      pokemon.name === deletedPokemon.name &&
+      pokemon.type === deletedPokemon.type
+  );
+
+  if (duplicateInMyPokemonsIndex !== -1) {
+    myPokemons.splice(duplicateInMyPokemonsIndex, 1);
+    updateLocalStorage("myPokemons", myPokemons);
   }
 
   // sletter fra allPokemons
