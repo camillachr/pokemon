@@ -35,7 +35,7 @@ const typeColors = {
   fairy: "#D685AD",
 };
 
-//FETCH 50 POKEMONS
+// FETCH 50 POKEMONS
 async function fetchAndShowAllPokemons() {
   try {
     for (let i = 1; i < 51; i++) {
@@ -51,13 +51,13 @@ async function fetchAndShowAllPokemons() {
     }
 
     allPokemons.unshift(...myPokemons); //pusher inn eksisterende selvlagde pokemons
-    updatePokemonList(allPokemons, pokemonContainer);
+    showPokemons(allPokemons, pokemonContainer);
   } catch (error) {
     console.error("Kunne ikke hente pokemons", error);
   }
 }
 
-//FETCH POKEMON-TYPER
+// FETCH POKEMON-TYPER
 async function fetchTypes() {
   try {
     const allTypes = [];
@@ -73,8 +73,8 @@ async function fetchTypes() {
   }
 }
 
-//VIS POKEMON-OVERSIKT
-async function updatePokemonList(pokemonList, container) {
+// VIS POKEMON-OVERSIKT
+async function showPokemons(pokemonList, container) {
   container.innerHTML = "";
 
   pokemonList.forEach((pokemon, index) => {
@@ -91,9 +91,29 @@ async function updatePokemonList(pokemonList, container) {
 
     //buttons og append til vanlige kort
     if (container === pokemonContainer) {
-      const editBtn = setupButton("edit", pokemon);
-      const saveBtn = setupButton("save", pokemon);
-      const deleteBtn = setupButton("delete", index, allPokemons);
+      //rediger-knapp
+      const editBtn = document.createElement("button");
+      editBtn.innerHTML = "Rediger";
+      editBtn.classList.add("btn");
+      editBtn.addEventListener("click", function () {
+        editPokemon(index);
+      });
+
+      //lagre-knapp
+      const saveBtn = document.createElement("button");
+      saveBtn.innerHTML = "Lagre";
+      saveBtn.classList.add("btn");
+      saveBtn.addEventListener("click", function () {
+        savePokemon(index);
+      });
+
+      //slette-knapp
+      const deleteBtn = document.createElement("button");
+      deleteBtn.innerHTML = "Slett";
+      deleteBtn.classList.add("btn");
+      deleteBtn.addEventListener("click", function () {
+        deletePokemonFromAll(index);
+      });
 
       const buttonContainer = document.createElement("div");
       buttonContainer.style.display = "flex";
@@ -103,55 +123,52 @@ async function updatePokemonList(pokemonList, container) {
       buttonContainer.append(saveBtn, deleteBtn, editBtn);
       card.append(buttonContainer);
     } else {
-      //button og append til lagret kort
-      const deleteBtn = setupButton("delete", index, savedPokemons);
-      card.append(deleteBtn);
+      //fjern-knapp
+      const removeBtn = document.createElement("button");
+      removeBtn.innerHTML = "Fjern";
+      removeBtn.classList.add("btn");
+      removeBtn.addEventListener("click", function () {
+        removePokemonFromSaved(index);
+      });
+      card.append(removeBtn);
     }
 
     container.append(card);
   });
 }
 
-//SLETTE
-async function deletePokemon(index, array) {
-  array.splice(index, 1);
-  updatePokemonList(allPokemons, pokemonContainer);
-  updatePokemonList(savedPokemons, savedPokemonContainer);
-}
+// SLETT POKEMON
+async function deletePokemonFromAll(index) {
+  const deletedPokemon = allPokemons[index];
 
-//BUTTON OPPSETT
-function setupButton(action, parameter, array) {
-  const button = document.createElement("button");
-  button.classList.add("btn");
+  //finner evt index i lagrede pokemons
+  const duplicateIndex = savedPokemons.findIndex(
+    (pokemon) =>
+      pokemon.name === deletedPokemon.name &&
+      pokemon.type === deletedPokemon.type
+  );
 
-  if (action === "delete") {
-    button.innerHTML = "Slett";
-    button.addEventListener("click", function () {
-      deletePokemon(parameter, array);
-    });
-  } else if (action === "edit") {
-    button.innerHTML = "Rediger";
-    button.addEventListener("click", function () {
-      editPokemon(parameter);
-    });
-  } else if (action === "save") {
-    button.innerHTML = "Lagre";
-    button.addEventListener("click", function () {
-      savePokemon(parameter);
-    });
-  } else if (action === "remove") {
-    button.innerHTML = "Fjern";
-    button.addEventListener("click", function () {
-      removePokemon(parameter);
-    });
-  } else {
-    console.error("Feil ved oppsett av button i setUpButton");
+  // (.findIndex returnerer -1 hvis den IKKE finner duplikat)
+  // sletter fra lagrede pokemons, hvis den finnes der
+  if (duplicateIndex !== -1) {
+    savedPokemons.splice(duplicateIndex, 1);
+    updateLocalStorage("savedPokemons", savedPokemons);
+    showPokemons(savedPokemons, savedPokemonContainer);
   }
 
-  return button;
+  // sletter fra allPokemons
+  allPokemons.splice(index, 1);
+  showPokemons(allPokemons, pokemonContainer);
 }
 
-//LAG TYPE-FILTER-KNAPPER
+// FJERN POKEMON FRA LAGREDE
+async function removePokemonFromSaved(index) {
+  savedPokemons.splice(index, 1);
+  showPokemons(savedPokemons, savedPokemonContainer);
+  updateLocalStorage("savedPokemons", savedPokemons);
+}
+
+// LAG TYPE-FILTER-KNAPPER
 async function createAndShowFilterBtns() {
   allTypes = await fetchTypes();
 
@@ -166,7 +183,7 @@ async function createAndShowFilterBtns() {
   }
 }
 
-//FILTRERINGS-FUNKSJONALITET
+// FILTRERINGS-FUNKSJONALITET
 async function setUpFilter() {
   await createAndShowFilterBtns();
   filterButtons = document.querySelectorAll(".filter-btn");
@@ -176,7 +193,7 @@ async function setUpFilter() {
       //Sjekker om den klikkede knappen allerede er aktiv, hvis ikke;filtrer
       if (button.classList.contains("active")) {
         toggleFilterButton(button);
-        updatePokemonList(allPokemons, pokemonContainer);
+        showPokemons(allPokemons, pokemonContainer);
       } else {
         toggleFilterButton(button);
         const type = button.dataset.type;
@@ -185,7 +202,7 @@ async function setUpFilter() {
           (pokemon) => pokemon.type == type
         );
 
-        updatePokemonList(filteredPokemons, pokemonContainer);
+        showPokemons(filteredPokemons, pokemonContainer);
 
         //Feilhåndtering dersom ingen treff
         if (filteredPokemons.length == 0) {
@@ -196,7 +213,7 @@ async function setUpFilter() {
   });
 }
 
-//TOGGLE FILTER-KNAPP
+// TOGGLE FILTER-KNAPP
 function toggleFilterButton(clickedBtn) {
   filterButtons.forEach((button) =>
     button === clickedBtn
@@ -205,7 +222,7 @@ function toggleFilterButton(clickedBtn) {
   );
 }
 
-//LAG DIN EGEN POKEMON
+// LAG DIN EGEN POKEMON
 function makeNewPokemon() {
   const newPokemonNameInput = document.querySelector("#new-pokemon-name");
   const newPokemonTypeInput = document.querySelector("#new-pokemon-type");
@@ -244,7 +261,7 @@ function makeNewPokemon() {
   //legger til og viser ny pokemon i oversikten
   allPokemons.unshift(newPokemon);
   toggleFilterButton();
-  updatePokemonList(allPokemons, pokemonContainer);
+  showPokemons(allPokemons, pokemonContainer);
 
   //lagrer ny pokemon i localstorage
   myPokemons.unshift(newPokemon);
@@ -255,31 +272,40 @@ function makeNewPokemon() {
   newPokemonTypeInput.value = "";
 }
 
-//LAGRE FAVORITT-POKEMONS
-function savePokemon(selectedPokemon) {
-  //henter ut evt tidligere lagrede pokemons
+// LAGRE FAVORITT-POKEMONS
+function savePokemon(index) {
   savedPokemons = JSON.parse(localStorage.getItem("savedPokemons")) || [];
+  const chosenPokemon = allPokemons[index];
 
-  if (savedPokemons.length < 5) {
-    //lagrer ny pokemon og oppdaterer localStorage
-    savedPokemons.unshift(selectedPokemon);
-    updateLocalStorage("savedPokemons", savedPokemons);
-
-    //oppdaterer oversikt på siden
-    updatePokemonList(savedPokemons, savedPokemonContainer);
-  } else {
-    alert(
-      "Du kan bare lagre 5 pokemons. Fjern en pokemon fra samlingen for å lagre en ny."
-    );
+  // maksgrense på 5 lagrede
+  if (savedPokemons.length >= 5) {
+    alert("Du kan bare lagre 5 pokemons. Fjern en for å lagre ny.");
+    return;
   }
+
+  //sjekker etter duplikater
+  const duplicate = savedPokemons.find(
+    (pokemon) =>
+      pokemon.name === chosenPokemon.name && pokemon.type === chosenPokemon.type
+  );
+
+  if (duplicate) {
+    alert("Denne pokemonen har du allerede lagret.");
+    return;
+  }
+
+  //lagrer
+  savedPokemons.unshift(chosenPokemon);
+  updateLocalStorage("savedPokemons", savedPokemons);
+  showPokemons(savedPokemons, savedPokemonContainer);
 }
 
-//LOCAL STORAGE LAGRING
+// LOCAL STORAGE LAGRING
 function updateLocalStorage(key, value) {
   localStorage.setItem(key, JSON.stringify(value));
 }
 
-//Page load
+// PAGE LOAD
 fetchAndShowAllPokemons();
-updatePokemonList(savedPokemons, savedPokemonContainer);
+showPokemons(savedPokemons, savedPokemonContainer);
 setUpFilter();
