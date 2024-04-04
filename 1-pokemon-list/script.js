@@ -170,7 +170,11 @@ function editPokemon(index) {
   const newName = prompt("Skriv inn nytt navn:").toLowerCase();
   const newType = prompt("Skriv inn ny type:").toLowerCase();
 
-  //MÅ SJEKKE AT FELTENE ER FYLT UT
+  //sjekker at feltene er fylt ut
+  if (!newName || !newType) {
+    alert("Du må fylle ut begge feltene.");
+    return;
+  }
 
   //sjekker at typen finnes
   if (!allTypes.includes(newType)) {
