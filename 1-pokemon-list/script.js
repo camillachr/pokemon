@@ -45,12 +45,14 @@ async function fetchAndShowAllPokemons() {
         name: data.name,
         type: data.types[0].type.name,
         imgUrl: data.sprites.front_default,
+        group: "classic",
+        saved: false,
       };
 
       allPokemons.push(pokemon);
     }
 
-    allPokemons.unshift(...myPokemons); //pusher inn eksisterende selvlagde pokemons
+    //allPokemons.unshift(...myPokemons); //pusher inn eksisterende selvlagde pokemons
     showPokemons(allPokemons, pokemonContainer);
   } catch (error) {
     console.error("Kunne ikke hente pokemons", error);
@@ -112,7 +114,7 @@ async function showPokemons(pokemonList, container) {
       deleteBtn.innerHTML = "Slett";
       deleteBtn.classList.add("btn");
       deleteBtn.addEventListener("click", function () {
-        deletePokemonFromAll(index);
+        deletePokemon(index);
       });
 
       const buttonContainer = document.createElement("div");
@@ -123,12 +125,11 @@ async function showPokemons(pokemonList, container) {
       buttonContainer.append(saveBtn, deleteBtn, editBtn);
       card.append(buttonContainer);
     } else {
-      //fjern-knapp
       const removeBtn = document.createElement("button");
       removeBtn.innerHTML = "Fjern";
       removeBtn.classList.add("btn");
       removeBtn.addEventListener("click", function () {
-        removePokemonFromSaved(index);
+        removeFromSaved(index);
       });
       card.append(removeBtn);
     }
@@ -138,48 +139,38 @@ async function showPokemons(pokemonList, container) {
 }
 
 // SLETT POKEMON
-async function deletePokemonFromAll(index) {
-  const deletedPokemon = allPokemons[index];
-
-  // sletter evt fra savedPokemons
-  const duplicateInSavedIndex = savedPokemons.findIndex(
-    (pokemon) =>
-      pokemon.name === deletedPokemon.name &&
-      pokemon.type === deletedPokemon.type
-  );
-
-  if (duplicateInSavedIndex !== -1) {
-    removePokemonFromSaved(duplicateInSavedIndex);
-  }
-
-  // sletter evt fra myPokemons
-  const duplicateInMyPokemonsIndex = myPokemons.findIndex(
-    (pokemon) =>
-      pokemon.name === deletedPokemon.name &&
-      pokemon.type === deletedPokemon.type
-  );
-
-  if (duplicateInMyPokemonsIndex !== -1) {
-    myPokemons.splice(duplicateInMyPokemonsIndex, 1);
-    updateLocalStorage("myPokemons", myPokemons);
-  }
-
-  // sletter fra allPokemons
+async function deletePokemon(index) {
   allPokemons.splice(index, 1);
+  updateMyPokemons();
+  updateSavedPokemons();
   showPokemons(allPokemons, pokemonContainer);
+  showPokemons(savedPokemons, savedPokemonContainer);
 }
 
-// FJERN POKEMON FRA LAGREDE
-async function removePokemonFromSaved(index) {
-  savedPokemons.splice(index, 1);
-  showPokemons(savedPokemons, savedPokemonContainer);
-  updateLocalStorage("savedPokemons", savedPokemons);
+function removeFromSaved(index) {
+  const pokemonToRemove = savedPokemons[index];
+  const pokemonIndexInAllPokemons = allPokemons.findIndex(
+    (pokemon) =>
+      pokemon.name === pokemonToRemove.name &&
+      pokemon.type === pokemonToRemove.type
+  );
+
+  if (pokemonIndexInAllPokemons !== -1) {
+    allPokemons[pokemonIndexInAllPokemons].saved = false;
+    updateSavedPokemons(); //istedenfor splice
+    updateLocalStorage("savedPokemons", savedPokemons);
+    showPokemons(savedPokemons, savedPokemonContainer);
+  } else {
+    console.error("Pokemon not found in allPokemons array.");
+  }
 }
 
 // REDIGER POKEMON
 function editPokemon(index) {
   const newName = prompt("Skriv inn nytt navn:").toLowerCase();
   const newType = prompt("Skriv inn ny type:").toLowerCase();
+
+  //MÅ SJEKKE AT FELTENE ER FYLT UT
 
   //sjekker at typen finnes
   if (!allTypes.includes(newType)) {
@@ -199,10 +190,10 @@ function editPokemon(index) {
   //oppdaterer
   allPokemons[index].name = newName;
   allPokemons[index].type = newType;
-  updateLocalStorage("allPokemons", allPokemons);
+  updateMyPokemons();
+  updateSavedPokemons();
   showPokemons(allPokemons, pokemonContainer);
-
-  //må ta hensyn til om denne også finnes i myPokemons eller savedPokemons og oppdatere der, og deretter localstorage!
+  showPokemons(savedPokemons, savedPokemonContainer);
 }
 
 // LAG TYPE-FILTER-KNAPPER
@@ -271,6 +262,7 @@ function makeNewPokemon() {
     name: newPokemonName.toLowerCase(),
     type: newPokemonType.toLowerCase(),
     imgUrl: "/1-pokemon-list/assets/pokeball.png",
+    group: "selfmade",
   };
 
   //sjekker at begge felter er utfylt
@@ -299,14 +291,26 @@ function makeNewPokemon() {
   allPokemons.unshift(newPokemon);
   toggleFilterButton();
   showPokemons(allPokemons, pokemonContainer);
+  showPokemons(savedPokemons, savedPokemonContainer);
 
   //lagrer ny pokemon i localstorage
-  myPokemons.unshift(newPokemon);
+  updateMyPokemons();
   updateLocalStorage("myPokemons", myPokemons);
 
   //tømmer input-felter
   newPokemonNameInput.value = "";
   newPokemonTypeInput.value = "";
+}
+
+function updateMyPokemons() {
+  myPokemons = allPokemons.filter((pokemon) => pokemon.group === "selfmade");
+  updateLocalStorage("myPokemons", myPokemons);
+}
+
+function updateSavedPokemons() {
+  savedPokemons = allPokemons.filter((pokemon) => pokemon.saved === true);
+  updateLocalStorage("savedPokemons", savedPokemons);
+  showPokemons(savedPokemons, savedPokemonContainer);
 }
 
 // LAGRE FAVORITT-POKEMONS
@@ -332,9 +336,9 @@ function savePokemon(index) {
   }
 
   //lagrer
-  savedPokemons.unshift(chosenPokemon);
-  updateLocalStorage("savedPokemons", savedPokemons);
-  showPokemons(savedPokemons, savedPokemonContainer);
+  chosenPokemon.saved = true;
+  console.log(chosenPokemon);
+  updateSavedPokemons();
 }
 
 // LOCAL STORAGE LAGRING
