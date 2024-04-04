@@ -1,17 +1,18 @@
+// GLOBALE VARIABLER
 const filterContainer = document.querySelector("#filter-container");
-const filterButtons = document.querySelectorAll(".filter-btn");
+let filterButtons = []; //knappene opprettes dynamisk og lagres i denne
 const pokemonContainer = document.querySelector("#pokemon-container");
+const savedPokemonContainer = document.querySelector(
+  "#saved-pokemon-container"
+);
 const newPokemonBtn = document
   .querySelector("#new-pokemon-btn")
   .addEventListener("click", function () {
     makeNewPokemon();
   });
-const savedPokemonContainer = document.querySelector(
-  "#saved-pokemon-container"
-);
+
 let allPokemons = [];
 
-//mappe lagring av type-farger
 const typeColors = {
   normal: "#A8A77A",
   fire: "#EE8130",
@@ -33,7 +34,7 @@ const typeColors = {
   fairy: "#D685AD",
 };
 
-// fetch pokemons
+//FETCH 50 POKEMONS
 async function fetchAndShowPokemons() {
   try {
     for (let i = 1; i < 51; i++) {
@@ -48,7 +49,7 @@ async function fetchAndShowPokemons() {
       allPokemons.push(pokemon);
     }
     updatePokemonList(allPokemons);
-    console.log(allPokemons); //FJERN
+    //console.log(allPokemons); //FJERN
   } catch (error) {
     console.error("Kunne ikke hente pokemons", error);
   }
@@ -56,11 +57,27 @@ async function fetchAndShowPokemons() {
 
 fetchAndShowPokemons();
 
-// vis pokemons på siden
+//FETCH POKEMON-TYPER
+async function fetchTypes() {
+  try {
+    const allTypes = [];
+    for (let i = 1; i < 19; i++) {
+      const response = await fetch(`https://pokeapi.co/api/v2/type/${i}`);
+      const data = await response.json();
+      const typeName = data.name;
+      allTypes.push(typeName);
+    }
+    return allTypes;
+  } catch (error) {
+    console.error("Kunne ikke hente typer", error);
+  }
+}
+
+//VIS POKEMON-OVERSIKT
 async function updatePokemonList(pokemonList) {
   pokemonContainer.innerHTML = "";
 
-  for (i = 0; i < pokemonList.length; i++) {
+  for (let i = 0; i < pokemonList.length; i++) {
     //lager kort med styling
     const card = document.createElement("div");
     card.innerHTML = `<p style="margin: 0;">${pokemonList[i].type}</p><img src=" ${pokemonList[i].imgUrl}" width="100px" /><h3 style="margin: 20px 0;">${pokemonList[i].name}</h3>  `;
@@ -97,40 +114,60 @@ async function updatePokemonList(pokemonList) {
   }
 }
 
-//filter
-filterButtons.forEach((button) => {
-  button.addEventListener("click", function () {
-    //Sjekker om den klikkede knappen allerede er aktiv, hvis ikke;filtrer
-    if (button.classList.contains("active")) {
-      turnOffFilter();
-    } else {
-      toggleActiveFilterButton(filterButtons, button);
-      const type = button.dataset.type;
-      const filteredPokemons = allPokemons.filter(
-        (pokemon) => pokemon.type == type
-      );
-      updatePokemonList(filteredPokemons);
+//LAG TYPE-FILTER-KNAPPER
+async function createAndShowFilterBtns() {
+  allTypes = await fetchTypes();
 
-      //Feilhåndtering dersom ingen treff
-      if (filteredPokemons.length == 0) {
-        pokemonContainer.innerHTML = `Beklager, finner ingen Pokemons av typen ${type}.`;
-      }
-    }
-  });
-});
+  for (let i = 0; i < allTypes.length; i++) {
+    const filterBtn = document.createElement("button");
+    filterBtn.classList.add("filter-btn", "btn");
+    filterBtn.setAttribute("data-type", `${allTypes[i]}`);
+    filterBtn.innerHTML = allTypes[i];
 
-//markere aktiv filterknapp, og inaktivere resterende filterknapper
-function toggleActiveFilterButton(filterButtons, activeButton) {
+    const filterBtnContainer = document.querySelector("#filter-btn-container");
+    filterBtnContainer.append(filterBtn);
+  }
+}
+
+//FILTRERINGS-FUNKSJONALITET
+async function setUpFilter() {
+  await createAndShowFilterBtns();
+  filterButtons = document.querySelectorAll(".filter-btn");
+
   filterButtons.forEach((button) => {
-    if (button === activeButton) {
-      button.classList.add("active");
-    } else {
-      button.classList.remove("active");
-    }
+    button.addEventListener("click", function () {
+      //Sjekker om den klikkede knappen allerede er aktiv, hvis ikke;filtrer
+      if (button.classList.contains("active")) {
+        turnOffFilter();
+      } else {
+        toggleActiveFilterButton(filterButtons, button);
+        const type = button.dataset.type;
+        const filteredPokemons = allPokemons.filter(
+          (pokemon) => pokemon.type == type
+        );
+        updatePokemonList(filteredPokemons);
+
+        //Feilhåndtering dersom ingen treff
+        if (filteredPokemons.length == 0) {
+          pokemonContainer.innerHTML = `Beklager, finner ingen Pokemons av typen ${type}.`;
+        }
+      }
+    });
   });
 }
 
-// trenger dette å være en egen funksjon eller skal den tilbake i filter koden?
+setUpFilter();
+
+//TOGGLE RIKTIG/AKTIV FILTER-KNAPP
+function toggleActiveFilterButton(filterButtons, activeButton) {
+  filterButtons.forEach((button) =>
+    button === activeButton
+      ? button.classList.add("active")
+      : button.classList.remove("active")
+  );
+}
+
+//DEAKTIVER FILTER
 function turnOffFilter() {
   filterButtons.forEach((button) => {
     button.classList.remove("active");
@@ -138,7 +175,7 @@ function turnOffFilter() {
   updatePokemonList(allPokemons);
 }
 
-//Lag din egen Pokemon
+//LAG DIN EGEN POKEMON
 function makeNewPokemon() {
   const newPokemonName = document
     .querySelector("#new-pokemon-name")
@@ -149,16 +186,35 @@ function makeNewPokemon() {
     .value.toLowerCase();
 
   const newPokemon = {
-    name: newPokemonName,
-    type: newPokemonType,
+    name: newPokemonName.toLowerCase(),
+    type: newPokemonType.toLowerCase(),
     imgUrl: "/1-pokemon-list/assets/pokeball.png",
   };
 
-  if (newPokemonName && newPokemonType) {
-    allPokemons.unshift(newPokemon);
-    turnOffFilter();
-    updatePokemonList(allPokemons);
-  } else {
+  //sjekker at begge felter er utfylt
+  if (!newPokemonName || !newPokemonType) {
     alert("Du må skrive både navn og type for din nye pokemon.");
+    return;
   }
+
+  //sjekker at typen finnes
+  if (!allTypes.includes(newPokemonType)) {
+    alert("Denne typen finnes ikke.");
+    return;
+  }
+
+  //sjekker om pokemon allerede finnes
+  const duplicate = allPokemons.find(
+    (pokemon) =>
+      pokemon.name === newPokemonName && pokemon.type === newPokemonType
+  );
+  if (duplicate) {
+    alert("Denne pokemonen finnes allerede.");
+    return;
+  }
+
+  //legger til og viser ny pokemon i oversikten
+  allPokemons.unshift(newPokemon);
+  turnOffFilter();
+  updatePokemonList(allPokemons);
 }

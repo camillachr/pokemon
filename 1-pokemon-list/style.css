@@ -34,7 +34,7 @@ h3 {
   padding: 10px;
 }
 
-#filter-buttons {
+#filter-btn-container {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
@@ -55,9 +55,6 @@ h3 {
   flex-wrap: wrap;
   justify-content: center;
   margin: 20px;
-}
-.saved-pokemons-wrapper {
-  /* border: solid 2px #3a57a1; */
 }
 
 #saved-pokemon-container {
