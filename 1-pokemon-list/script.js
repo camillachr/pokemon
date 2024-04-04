@@ -177,13 +177,11 @@ function turnOffFilter() {
 
 //LAG DIN EGEN POKEMON
 function makeNewPokemon() {
-  const newPokemonName = document
-    .querySelector("#new-pokemon-name")
-    .value.toLowerCase();
+  const newPokemonNameInput = document.querySelector("#new-pokemon-name");
+  const newPokemonTypeInput = document.querySelector("#new-pokemon-type");
 
-  const newPokemonType = document
-    .querySelector("#new-pokemon-type")
-    .value.toLowerCase();
+  const newPokemonName = newPokemonNameInput.value.toLowerCase();
+  const newPokemonType = newPokemonTypeInput.value.toLowerCase();
 
   const newPokemon = {
     name: newPokemonName.toLowerCase(),
@@ -217,4 +215,8 @@ function makeNewPokemon() {
   allPokemons.unshift(newPokemon);
   turnOffFilter();
   updatePokemonList(allPokemons);
+
+  //tømmer input-felter
+  newPokemonNameInput.value = "";
+  newPokemonTypeInput.value = "";
 }
