@@ -1,6 +1,5 @@
 body {
   background-color: #f7c505;
-
   color: #3a57a1;
   font-family: "Trebuchet MS", "Lucida Sans Unicode";
 }
@@ -11,6 +10,13 @@ body {
   margin-top: 20px;
 }
 
+.wrapper-left {
+  flex: 60;
+}
+
+.wrapper-right {
+  flex: 40;
+}
 h1 {
   font-size: 3rem;
   margin: 10px;
@@ -37,15 +43,21 @@ h3 {
 }
 
 #pokemon-container {
-  flex: 60;
   display: flex;
   gap: 30px;
   flex-wrap: wrap;
   justify-content: center;
 }
+
+.new-pokemon-form {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin: 20px;
+}
 .saved-pokemons-wrapper {
-  border: solid 2px #3a57a1;
-  flex: 40;
+  /* border: solid 2px #3a57a1; */
 }
 
 #saved-pokemon-container {
@@ -59,19 +71,14 @@ h3 {
   background-color: black;
   color: white;
   border: none;
-  font-weight: bold;
   box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
-  width: 70px;
+  padding: 5px;
+  min-width: 70px;
   padding: 5px;
 }
 
 .filter-btn {
   background-color: #3a57a1;
-  color: white;
-  border: none;
-  box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
-  width: 70px;
-  padding: 5px;
 }
 
 .active {
