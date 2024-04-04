@@ -176,6 +176,35 @@ async function removePokemonFromSaved(index) {
   updateLocalStorage("savedPokemons", savedPokemons);
 }
 
+// REDIGER POKEMON
+function editPokemon(index) {
+  const newName = prompt("Skriv inn nytt navn:").toLowerCase();
+  const newType = prompt("Skriv inn ny type:").toLowerCase();
+
+  //sjekker at typen finnes
+  if (!allTypes.includes(newType)) {
+    alert("Denne typen finnes ikke.");
+    return;
+  }
+
+  //sjekker etter duplikat
+  const duplicate = allPokemons.find(
+    (pokemon) => pokemon.name === newName && pokemon.type === newType
+  );
+  if (duplicate) {
+    alert("Denne pokemonen finnes allerede.");
+    return;
+  }
+
+  //oppdaterer
+  allPokemons[index].name = newName;
+  allPokemons[index].type = newType;
+  updateLocalStorage("allPokemons", allPokemons);
+  showPokemons(allPokemons, pokemonContainer);
+
+  //må ta hensyn til om denne også finnes i myPokemons eller savedPokemons og oppdatere der, og deretter localstorage!
+}
+
 // LAG TYPE-FILTER-KNAPPER
 async function createAndShowFilterBtns() {
   allTypes = await fetchTypes();
