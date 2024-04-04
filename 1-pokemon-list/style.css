@@ -2,20 +2,25 @@ body {
   background-color: #f7c505;
   color: #3a57a1;
   font-family: "Trebuchet MS", "Lucida Sans Unicode";
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .wrapper {
   display: flex;
   justify-content: center;
+  gap: 20px;
   margin-top: 20px;
+  max-width: 1200px;
 }
 
 .wrapper-left {
-  flex: 60;
+  flex: 80;
 }
 
 .wrapper-right {
-  flex: 40;
+  flex: 20;
 }
 h1 {
   font-size: 3rem;
@@ -59,9 +64,11 @@ h3 {
 
 #saved-pokemon-container {
   display: flex;
-  gap: 30px;
+  gap: 10px;
   flex-wrap: wrap;
+  justify-content: center;
   background-color: #f6da6c;
+  flex-direction: column;
 }
 
 .btn {

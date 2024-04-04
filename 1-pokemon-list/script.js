@@ -11,6 +11,7 @@ const newPokemonBtn = document
     makeNewPokemon();
   });
 let myPokemons = JSON.parse(localStorage.getItem("myPokemons")) || [];
+let savedPokemons = JSON.parse(localStorage.getItem("savedPokemons")) || [];
 let allPokemons = [];
 
 const typeColors = {
@@ -75,14 +76,14 @@ async function fetchTypes() {
 }
 
 //VIS POKEMON-OVERSIKT
-async function updatePokemonList(pokemonList, index) {
+async function updatePokemonList(pokemonList) {
   pokemonContainer.innerHTML = "";
 
-  for (let i = 0; i < pokemonList.length; i++) {
+  pokemonList.forEach((pokemon, index) => {
     //lager kort med styling
     const card = document.createElement("div");
-    card.innerHTML = `<p style="margin: 0;">${pokemonList[i].type}</p><img src=" ${pokemonList[i].imgUrl}" width="100px" /><h3 style="margin: 20px 0;">${pokemonList[i].name}</h3>  `;
-    card.style.backgroundColor = typeColors[pokemonList[i].type.toLowerCase()];
+    card.innerHTML = `<p style="margin: 0;">${pokemon.type}</p><img src=" ${pokemon.imgUrl}" width="100px" /><h3 style="margin: 20px 0;">${pokemon.name}</h3>  `;
+    card.style.backgroundColor = typeColors[pokemon.type.toLowerCase()];
     card.style.padding = "20px";
     card.style.boxShadow = "rgba(0, 0, 0, 0.24) 0px 3px 8px";
     card.style.color = "white";
@@ -90,18 +91,12 @@ async function updatePokemonList(pokemonList, index) {
     card.style.flexDirection = "column";
     card.style.alignItems = "center";
 
-    //buttons på kort
-    const deleteBtn = document.createElement("button");
-    const editBtn = document.createElement("button");
+    //buttons
+    const deleteBtn = setupButton("delete", index, allPokemons);
+    const editBtn = setupButton("edit", pokemon);
+    const saveBtn = setupButton("save", pokemon);
 
-    deleteBtn.innerHTML = "Slett";
-    editBtn.innerHTML = "Rediger";
-
-    deleteBtn.classList.add("btn");
-    editBtn.classList.add("btn");
-
-    const saveBtn = saveBtnSetup(index);
-
+    //button container
     const buttonContainer = document.createElement("div");
     buttonContainer.style.display = "flex";
     buttonContainer.style.flexDirection = "column";
@@ -111,19 +106,42 @@ async function updatePokemonList(pokemonList, index) {
     buttonContainer.append(saveBtn, deleteBtn, editBtn);
     card.append(buttonContainer);
     pokemonContainer.append(card);
-  }
+  });
 }
 
-function saveBtnSetup(index) {
-  const saveBtn = document.createElement("button");
-  saveBtn.innerHTML = "Lagre";
-  saveBtn.classList.add("btn");
+//SLETTE
+async function deletePokemon(index, array) {
+  array.splice(index, 1);
+  updateLocalStorage(`${array}`, array);
+  updatePokemonList(allPokemons);
+  updateSavedPokemonsList(savedPokemons);
+}
 
-  saveBtn.addEventListener("click", function () {
-    savePokemon(index);
-  });
+//"GENERISK" BUTTON OPPSETT
+function setupButton(action, parameter, array) {
+  const button = document.createElement("button");
+  button.classList.add("btn");
 
-  return saveBtn;
+  if (action === "delete") {
+    button.innerHTML = "Slett";
+    button.addEventListener("click", function () {
+      deletePokemon(parameter, array);
+    });
+  } else if (action === "edit") {
+    button.innerHTML = "Rediger";
+    button.addEventListener("click", function () {
+      editPokemon(parameter);
+    });
+  } else if (action === "save") {
+    button.innerHTML = "Lagre";
+    button.addEventListener("click", function () {
+      savePokemon(parameter);
+    });
+  } else {
+    console.error("Feil ved oppsett av button i setUpButton");
+  }
+
+  return button;
 }
 
 //LAG TYPE-FILTER-KNAPPER
@@ -225,7 +243,7 @@ function makeNewPokemon() {
 
   //lagrer ny pokemon i localstorage
   myPokemons.unshift(newPokemon);
-  saveToLocalStorage("myPokemons", myPokemons);
+  updateLocalStorage("myPokemons", myPokemons);
 
   //tømmer input-felter
   newPokemonNameInput.value = "";
@@ -233,9 +251,56 @@ function makeNewPokemon() {
 }
 
 //LAGRE FAVORITT-POKEMONS
-function savePokemon() {}
+function savePokemon(selectedPokemon) {
+  //henter ut evt tidligere lagrede pokemons
+  savedPokemons = JSON.parse(localStorage.getItem("savedPokemons")) || [];
+
+  //lagrer ny pokemon og oppdaterer localStorage
+  savedPokemons.unshift(selectedPokemon);
+  updateLocalStorage("savedPokemons", savedPokemons);
+
+  //oppdaterer oversikt på siden
+  updateSavedPokemonsList();
+}
+
+//OPPDATER LAGREDE POKEMONS OVERSIKT
+function updateSavedPokemonsList() {
+  savedPokemonContainer.innerHTML = "";
+
+  savedPokemons.forEach((pokemon, index) => {
+    //bilde
+    const img = document.createElement("div");
+    img.innerHTML = `<img src=" ${pokemon.imgUrl}" width="100px" />  `;
+    img.style.flex = "50";
+
+    //detaljer
+    const details = document.createElement("div");
+    details.innerHTML = `<p style="margin: 0;">${pokemon.type}</p><h3 style="margin: 0;">${pokemon.name}</h3>`;
+    details.style.display = "flex";
+    details.style.flexDirection = "column";
+    details.style.gap = "5px";
+
+    //selve kortet
+    const card = document.createElement("div");
+    card.style.backgroundColor = typeColors[pokemon.type];
+    card.style.lenght = "100%";
+    card.style.padding = "10px";
+    card.style.boxShadow = "rgba(0, 0, 0, 0.24) 0px 3px 8px";
+    card.style.color = "white";
+    card.style.display = "flex";
+
+    //button
+    const deleteBtn = setupButton("delete", index, savedPokemons);
+
+    //append
+    details.append(deleteBtn);
+    card.append(img, details);
+    savedPokemonContainer.append(card);
+  });
+}
+updateSavedPokemonsList();
 
 //LOCAL STORAGE LAGRING
-function saveToLocalStorage(key, value) {
+function updateLocalStorage(key, value) {
   localStorage.setItem(key, JSON.stringify(value));
 }
