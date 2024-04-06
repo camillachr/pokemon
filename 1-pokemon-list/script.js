@@ -323,43 +323,31 @@ function removeFromSaved(index) {
 }
 
 // SLETT POKEMON ALLE STEDER ----------------------------------------------------
+
 async function deletePokemon(index) {
   const selectedPokemon = allPokemons[index];
 
-  //slett fra myPokemons
-  let duplicateIndex = getDuplicateIndex(myPokemons, selectedPokemon);
-  if (duplicateIndex >= 0) {
-    myPokemons.splice(duplicateIndex, 1);
-  }
-  //slett fra savedPokemons
-  duplicateIndex = getDuplicateIndex(savedPokemons, selectedPokemon);
+  savedPokemons = savedPokemons.filter(
+    (pokemon) =>
+      pokemon.name !== selectedPokemon.name &&
+      pokemon.type !== selectedPokemon.type
+  );
 
-  if (duplicateIndex >= 0) {
-    savedPokemons.splice(duplicateIndex, 1);
-  }
+  myPokemons = myPokemons.filter(
+    (pokemon) =>
+      pokemon.name !== selectedPokemon.name &&
+      pokemon.type !== selectedPokemon.type
+  );
+  updateAllLocalStorage();
+
   //slett fra allPokemons
   allPokemons.splice(index, 1);
-
-  updateAllLocalStorage();
   showAllCards();
 }
 
-// FINN DUPLIKATER
-function getDuplicateIndex(array, selectedPokemon) {
-  const duplicateIndex = array.findIndex(
-    (pokemon) =>
-      pokemon.name === selectedPokemon.name &&
-      pokemon.type === selectedPokemon.type
-  );
-
-  if (duplicateIndex >= 0) {
-    return duplicateIndex;
-  }
-}
-
 // REDIGER POKEMON ----------------------------------------------------
+
 function editPokemon(index) {
-  const selectedPokemon = allPokemons[index];
   const newName = prompt("Skriv inn nytt navn:").toLowerCase();
   const newType = prompt("Skriv inn ny type:").toLowerCase();
   console.log(newName, newType);
@@ -384,27 +372,30 @@ function editPokemon(index) {
     return;
   }
 
-  //redigere lagrede pokemons
-  let duplicateIndex = getDuplicateIndex(savedPokemons, selectedPokemon);
+  const selectedPokemon = allPokemons[index];
 
-  if (duplicateIndex >= 0) {
-    savedPokemons[duplicateIndex].name = newName;
-    savedPokemons[duplicateIndex].type = newType;
-  }
-  //redigere myPokemons
-  duplicateIndex = getDuplicateIndex(myPokemons, selectedPokemon);
-  if (duplicateIndex >= 0) {
-    myPokemons[duplicateIndex].name = newName;
-    myPokemons[duplicateIndex].type = newType;
-  }
+  editDuplicates(savedPokemons, selectedPokemon, newName, newType);
+  editDuplicates(myPokemons, selectedPokemon, newName, newType);
 
-  //redigere allPokemons
-  allPokemons[index].name = newName;
-  allPokemons[index].type = newType;
+  selectedPokemon.name = newName;
+  selectedPokemon.type = newType;
 
   updateAllLocalStorage();
   getMyPokemons();
   showAllCards();
+}
+
+function editDuplicates(array, selectedPokemon, name, type) {
+  const duplicate = array.find(
+    (pokemon) =>
+      pokemon.name === selectedPokemon.name &&
+      pokemon.type === selectedPokemon.type
+  );
+
+  if (duplicate) {
+    duplicate.name = name;
+    duplicate.type = type;
+  }
 }
 
 // LOCAL STORAGE LAGRING ----------------------------------------------------
