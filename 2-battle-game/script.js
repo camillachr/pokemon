@@ -25,8 +25,8 @@ async function fetchPokemons() {
         type: data.types[0].type.name,
         sprites: data.sprites,
         stats: {
-          baseHp: data.stats[0].base_stat,
-          hp: data.stats[0].base_stat,
+          baseHp: 45,
+          hp: 45,
           attack: data.stats[1].base_stat,
           defense: data.stats[2].base_stat,
         },
@@ -61,13 +61,12 @@ async function fetchAndUpdateMoveDetails(pokemon) {
       const move = {
         name: data.name,
         power: data.power,
-        accuracy: data.accuracy,
-        pp: data.pp,
       };
       movesWithDetails.push(move);
     }
     //erstatter move url med fetchede detaljer
     pokemon.moves = movesWithDetails;
+    pokemons[2].moves[1].power = 120; //liten manuell fix, api verdi var null
   } catch (error) {
     console.error("Kunne ikke hente moves", error);
   }
@@ -129,7 +128,7 @@ function selectRandomEnemy() {
   const randomIndex = Math.floor(Math.random() * potentialEnemyPokemons.length);
 
   enemyPokemon = potentialEnemyPokemons[randomIndex];
-  console.log("Din motstander: ", enemyPokemon);
+  console.log("Din motstander: ", enemyPokemon.name);
   launchGame();
 }
 
@@ -146,10 +145,12 @@ function launchGame() {
 function updateHealthBar() {
   //Din pokemon HP
   const yourPokemonHealth = document.querySelector("#your-pokemon-health");
+
   yourPokemonHealth.innerHTML = `<p>Din pokemon <br> ${yourPokemon.name} HP: ${yourPokemon.stats.hp} / ${yourPokemon.stats.baseHp}</p>`;
 
   //Motstanders pokemon HP
   const enemyPokemonHealth = document.querySelector("#enemy-pokemon-health");
+
   enemyPokemonHealth.innerHTML = `<p>Motstander <br>${enemyPokemon.name} HP: ${enemyPokemon.stats.hp} / ${enemyPokemon.stats.baseHp}</p>`;
 }
 
@@ -169,6 +170,7 @@ function showPokemonPlayers() {
   enemyPokemonImg.innerHTML = `<img src=${enemyPokemon.sprites.front_default} width="150px;"/>`;
   enemyPokemonImg.style.position = "absolute";
   enemyPokemonImg.style.right = "70px";
+  enemyPokemonImg.style.bottom = "50px";
 
   battleGround.append(yourPokemonImg, enemyPokemonImg);
 }
@@ -185,25 +187,61 @@ function updateMovePanel() {
 
     movePanel.append(moveBtn);
   });
+  message.innerHTML = "Velg ditt neste move!";
 }
 
 // ATTACK -----------------------------------------------------
 function attack(move, attacker, defender) {
-  console.log("Inne i attack");
+  const attack = attacker.stats.attack;
+  const defense = defender.stats.defense;
+  const movePower = move.power;
+
+  // Beregner damage med en fiffig formel
+  const damage = Math.floor(
+    ([(2 * 1) / 5 + 2] * movePower * (attack / defense)) / 50 + 2
+  );
+
+  defender.stats.hp -= damage;
+  updateHealthBar();
+
+  if (attacker == enemyPokemon) {
+    message.innerHTML = `Pass opp, ${attacker.name} gjorde en ${move.name}!`;
+  } else {
+    message.innerHTML = `Du gjorde en ${move.name}!`;
+    setTimeout(function () {
+      counterAttack();
+    }, 1000);
+  }
 }
 
-function calculateDamage() {
-  //regn ut damage med attack, defense osv
-}
+function counterAttack() {
+  const randomMove =
+    enemyPokemon.moves[Math.floor(Math.random() * enemyPokemon.moves.length)];
 
-function counterAttack(move, attacker, defender) {}
+  attack(randomMove, enemyPokemon, yourPokemon);
+  checkHealth();
+}
 
 function checkHealth() {
-  //sjekker om noen er HP 0, da er pokemonen fainted og spillet over
+  if (yourPokemon.stats.hp <= 0) {
+    alert(`${yourPokemon.name} besvimte! Du tapte..`);
+    endGame();
+  } else if (enemyPokemon.stats.hp <= 0) {
+    alert(`${enemyPokemon.name} besvimte! Gratulerer du vant!`);
+    endGame();
+  }
 }
 
-// START NYTT SPILL
-function startNewGame() {
-  selectPokemonContainer.classList.remove("hidden");
-  gameCointainer.classList.add("hidden");
+function endGame() {
+  //Tøm move panel
+  movePanel.innerHTML = "";
+  //Start nytt spill knapp
+  const startNewGameBtn = document.createElement("button");
+  startNewGameBtn.classList.add("btn");
+  startNewGameBtn.innerHTML = "Start nytt spill";
+  startNewGameBtn.addEventListener("click", function () {
+    location.reload();
+  });
+  message.innerHTML = "";
+  message.append(startNewGameBtn);
 }
