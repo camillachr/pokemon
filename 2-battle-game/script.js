@@ -4,6 +4,10 @@ const selectPokemonContainer = document.querySelector(
 const gameCointainer = document.querySelector("#game-container");
 const healthBar = document.querySelector("#health-bar");
 const battleGround = document.querySelector("#battle-ground");
+const yourPokemonImg = document.createElement("div");
+const enemyPokemonImg = document.createElement("div");
+const yourPokemonHealth = document.querySelector("#your-pokemon-health");
+const enemyPokemonHealth = document.querySelector("#enemy-pokemon-health");
 const movePanel = document.querySelector("#move-panel");
 const message = document.querySelector("#message");
 
@@ -100,7 +104,7 @@ function showPokemons() {
 
     //btn
     const selectBtn = document.createElement("button");
-    selectBtn.innerHTML = `${pokemon.name},<br> I choose you!`;
+    selectBtn.innerHTML = `${pokemon.name},<br> jeg velger deg!`;
     selectBtn.classList.add("btn");
     selectBtn.addEventListener("click", function () {
       selectPokemon(index);
@@ -143,15 +147,14 @@ function launchGame() {
 
 // OPPDATER HEALTH BAR
 function updateHealthBar() {
-  //Din pokemon HP
-  const yourPokemonHealth = document.querySelector("#your-pokemon-health");
-
-  yourPokemonHealth.innerHTML = `<p>Din pokemon <br> ${yourPokemon.name} HP: ${yourPokemon.stats.hp} / ${yourPokemon.stats.baseHp}</p>`;
-
-  //Motstanders pokemon HP
-  const enemyPokemonHealth = document.querySelector("#enemy-pokemon-health");
-
-  enemyPokemonHealth.innerHTML = `<p>Motstander <br>${enemyPokemon.name} HP: ${enemyPokemon.stats.hp} / ${enemyPokemon.stats.baseHp}</p>`;
+  if (yourPokemonHealth < 0) {
+    yourPokemonHealth = 0;
+  }
+  if (enemyPokemonHealth < 0) {
+    enemyPokemonHealth = 0;
+  }
+  yourPokemonHealth.innerHTML = `<p> ${yourPokemon.name} HP: ${yourPokemon.stats.hp} / ${yourPokemon.stats.baseHp}</p>`;
+  enemyPokemonHealth.innerHTML = `<p>${enemyPokemon.name} HP: ${enemyPokemon.stats.hp} / ${enemyPokemon.stats.baseHp}</p>`;
 }
 
 // VIS SPILLERE
@@ -159,14 +162,12 @@ function showPokemonPlayers() {
   const battleGround = document.querySelector("#battle-ground");
 
   //Din pokemon
-  const yourPokemonImg = document.createElement("div");
   yourPokemonImg.innerHTML = `<img src=${yourPokemon.sprites.back_default} width="150px;"/>`;
   yourPokemonImg.style.position = "absolute";
   yourPokemonImg.style.left = "50px";
   yourPokemonImg.style.bottom = "0";
 
   //Motstander pokemon
-  const enemyPokemonImg = document.createElement("div");
   enemyPokemonImg.innerHTML = `<img src=${enemyPokemon.sprites.front_default} width="150px;"/>`;
   enemyPokemonImg.style.position = "absolute";
   enemyPokemonImg.style.right = "70px";
@@ -177,9 +178,10 @@ function showPokemonPlayers() {
 
 // OPPDATER MOVE PANEL
 function updateMovePanel() {
+  movePanel.innerHTML = "";
   yourPokemon.moves.forEach((move) => {
     const moveBtn = document.createElement("button");
-    moveBtn.innerHTML = `${move.name}`;
+    moveBtn.innerHTML = `${move.name.toUpperCase()}`;
     moveBtn.classList.add("move-btn");
     moveBtn.addEventListener("click", function () {
       attack(move, yourPokemon, enemyPokemon);
@@ -187,7 +189,7 @@ function updateMovePanel() {
 
     movePanel.append(moveBtn);
   });
-  message.innerHTML = "Velg ditt neste move!";
+  message.innerHTML = "Velg et move!";
 }
 
 // ATTACK -----------------------------------------------------
@@ -203,14 +205,19 @@ function attack(move, attacker, defender) {
 
   defender.stats.hp -= damage;
   updateHealthBar();
-
+  checkHealth();
   if (attacker == enemyPokemon) {
-    message.innerHTML = `Pass opp, ${attacker.name} gjorde en ${move.name}!`;
+    message.innerHTML = `${attacker.name} gjorde en ${move.name} med ${damage} damage!`;
   } else {
-    message.innerHTML = `Du gjorde en ${move.name}!`;
+    message.innerHTML = `Din ${attacker.name} tok en ${move.name} med ${damage} damage!`;
+    movePanel.innerHTML = "";
     setTimeout(function () {
       counterAttack();
-    }, 1000);
+    }, 2000);
+    setTimeout(function () {
+      updateMovePanel();
+      checkHealth();
+    }, 4000);
   }
 }
 
@@ -219,15 +226,18 @@ function counterAttack() {
     enemyPokemon.moves[Math.floor(Math.random() * enemyPokemon.moves.length)];
 
   attack(randomMove, enemyPokemon, yourPokemon);
-  checkHealth();
 }
 
 function checkHealth() {
   if (yourPokemon.stats.hp <= 0) {
-    alert(`${yourPokemon.name} besvimte! Du tapte..`);
+    yourPokemonImg.remove();
+    yourPokemonHealth.innerHTML = `${yourPokemon.name} har besvimt.`;
+    enemyPokemonHealth.innerHTML = `${enemyPokemon.name} vinner!`;
     endGame();
   } else if (enemyPokemon.stats.hp <= 0) {
-    alert(`${enemyPokemon.name} besvimte! Gratulerer du vant!`);
+    enemyPokemonImg.remove();
+    enemyPokemonHealth.innerHTML = `${enemyPokemon.name} har besvimt.`;
+    yourPokemonHealth.innerHTML = `${yourPokemon.name} vinner!`;
     endGame();
   }
 }
@@ -235,6 +245,8 @@ function checkHealth() {
 function endGame() {
   //Tøm move panel
   movePanel.innerHTML = "";
+  message.innerHTML = "";
+
   //Start nytt spill knapp
   const startNewGameBtn = document.createElement("button");
   startNewGameBtn.classList.add("btn");
@@ -242,6 +254,6 @@ function endGame() {
   startNewGameBtn.addEventListener("click", function () {
     location.reload();
   });
-  message.innerHTML = "";
+
   message.append(startNewGameBtn);
 }

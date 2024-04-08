@@ -32,7 +32,9 @@ body {
   height: 50px;
   display: flex;
   justify-content: space-around;
+  align-items: center;
   background-color: #f6da6c;
+  border-top: 4px solid #3a57a1;
 }
 #health-bar p {
   margin: 5px 0;
@@ -48,10 +50,12 @@ body {
 
 #move-panel {
   height: 50px;
-  background-color: #3a57a1;
+  background-color: #f7c505;
+  color: #3a57a1;
   bottom: 0;
   display: flex;
   justify-content: space-evenly;
+  align-items: stretch;
   gap: 4px;
   border-top: 4px solid #3a57a1;
   border-bottom: 4px solid #3a57a1;
