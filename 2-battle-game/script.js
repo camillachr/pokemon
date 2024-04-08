@@ -1,12 +1,19 @@
-const pokemonsOptionsContainer = document.querySelector(
-  "#pokemon-options-container"
+const selectPokemonContainer = document.querySelector(
+  "#select-pokemon-container"
 );
+
+const gameCointainer = document.querySelector("#game-container");
+const healthBar = document.querySelector("#health-bar");
+
+const battleGround = document.querySelector("#battle-ground");
+const movePanel = document.querySelector("#move-panel");
+const message = document.querySelector("#message");
 
 let pokemons = [];
 let yourPokemon;
 let enemyPokemon;
 
-// FETCH POKEMONS (3 stk)
+// FETCH POKEMONS (3 stk) --------------------------------------------
 async function fetchPokemons() {
   try {
     const pokemonsToFetch = ["squirtle", "charmander", "bulbasaur"];
@@ -20,6 +27,7 @@ async function fetchPokemons() {
         type: data.types[0].type.name,
         sprites: data.sprites,
         stats: {
+          baseHp: data.stats[0].base_stat,
           hp: data.stats[0].base_stat,
           attack: data.stats[1].base_stat,
           defense: data.stats[2].base_stat,
@@ -41,12 +49,15 @@ async function fetchPokemons() {
 }
 fetchPokemons();
 
+// FETCH MOVES
 async function fetchMoveDetails() {
-  //
+  // fetche alle moves og gjøre hva?
 }
 
+// VIS POKEMONS ------------------------------------------
 function showPokemons() {
-  pokemonsOptionsContainer.innerHtml = "";
+  const pokemonsContainer = document.querySelector("#pokemons-container");
+  pokemonsContainer.innerHtml = "";
 
   pokemons.forEach((pokemon, index) => {
     //kort
@@ -66,16 +77,18 @@ function showPokemons() {
     });
 
     card.append(selectBtn);
-    pokemonsOptionsContainer.append(card);
+    pokemonsContainer.append(card);
   });
 }
 
+// VELG POKEMON
 function selectPokemon(index) {
   yourPokemon = pokemons[index];
   console.log("Du valgte: ", yourPokemon.name);
   selectRandomEnemy();
 }
 
+// VELGER FIENDE
 function selectRandomEnemy() {
   //filtrerer ut spillers valgte pokemon
   const potentialEnemyPokemons = pokemons.filter(
@@ -86,4 +99,68 @@ function selectRandomEnemy() {
 
   enemyPokemon = potentialEnemyPokemons[randomIndex];
   console.log("Din motstander: ", enemyPokemon);
+  launchGame();
+}
+
+// START SPILLET -----------------------------------------------------
+function launchGame() {
+  selectPokemonContainer.classList.add("hidden");
+  gameCointainer.classList.remove("hidden");
+  updateHealthBar();
+  showPokemonPlayers();
+}
+
+// OPPDATER HEALTH BAR
+function updateHealthBar() {
+  //Din pokemon HP
+  const yourPokemonHealth = document.querySelector("#your-pokemon-health");
+  yourPokemonHealth.innerHTML = `<p>${yourPokemon.name} HP: ${yourPokemon.stats.hp} / ${yourPokemon.stats.baseHp}</p>`;
+
+  //Motstanders pokemon HP
+  const enemyPokemonHealth = document.querySelector("#enemy-pokemon-health");
+  enemyPokemonHealth.innerHTML = `<p>${enemyPokemon.name} HP: ${enemyPokemon.stats.hp} / ${enemyPokemon.stats.baseHp}</p>`;
+}
+
+// VIS SPILLERE
+function showPokemonPlayers() {
+  const battleGround = document.querySelector("#battle-ground");
+
+  //Din pokemon
+  const yourPokemonImg = document.createElement("div");
+  yourPokemonImg.innerHTML = `<img src=${yourPokemon.sprites.back_default} width="150px;"/>`;
+  yourPokemonImg.style.position = "absolute";
+  yourPokemonImg.style.left = "50px";
+  yourPokemonImg.style.bottom = "0";
+
+  //Motstander pokemon
+  const enemyPokemonImg = document.createElement("div");
+  enemyPokemonImg.innerHTML = `<img src=${enemyPokemon.sprites.front_default} width="150px;"/>`;
+  enemyPokemonImg.style.position = "absolute";
+  enemyPokemonImg.style.right = "70px";
+
+  battleGround.append(yourPokemonImg, enemyPokemonImg);
+}
+
+// OPPDATER MOVE PANEL
+function updateMovePanel() {
+  //viser moves i move-panel
+}
+
+// ATTACK -----------------------------------------------------
+function attack(move, attacker, defender) {}
+
+function calculateDamage() {
+  //regn ut damage med attack, defense osv
+}
+
+function counterAttack(move, attacker, defender) {}
+
+function checkHealth() {
+  //sjekker om noen er HP 0, da er pokemonen fainted og spillet over
+}
+
+// START NYTT SPILL
+function startNewGame() {
+  selectPokemonContainer.classList.remove("hidden");
+  gameCointainer.classList.add("hidden");
 }

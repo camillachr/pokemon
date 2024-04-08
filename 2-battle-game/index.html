@@ -11,14 +11,17 @@
 
     <div id="select-pokemon-container">
       <h2>Velg din pokemon</h2>
-      <div id="pokemon-options-container"></div>
+      <div id="pokemons-container"></div>
     </div>
 
-    <div id="game-container">
-      <div id="health-bar-container"></div>
+    <div id="game-container" class="hidden">
+      <div id="health-bar">
+        <div id="your-pokemon-health"></div>
+        <div id="enemy-pokemon-health"></div>
+      </div>
       <div id="battle-ground"></div>
-      <div id="control-panel"></div>
-      <p id="message"></p>
+      <div id="move-panel"></div>
+      <div id="message"></div>
     </div>
     <script src="/2-battle-game/script.js"></script>
   </body>
