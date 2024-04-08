@@ -1,0 +1,12 @@
+body {
+  background-color: #f7c505;
+  color: #3a57a1;
+  font-family: "Trebuchet MS", "Lucida Sans Unicode";
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+#select-pokemon-container {
+  text-align: center;
+}
