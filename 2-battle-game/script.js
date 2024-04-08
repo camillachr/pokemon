@@ -1,4 +1,10 @@
+const pokemonsOptionsContainer = document.querySelector(
+  "#pokemon-options-container"
+);
+
 let pokemons = [];
+let yourPokemon;
+let enemyPokemon;
 
 // FETCH POKEMONS (3 stk)
 async function fetchPokemons() {
@@ -33,28 +39,51 @@ async function fetchPokemons() {
     console.error("Kunne ikke hente pokemons", error);
   }
 }
+fetchPokemons();
+
+async function fetchMoveDetails() {
+  //
+}
 
 function showPokemons() {
-  const pokemonsOptionsContainer = document.querySelector(
-    "#pokemon-options-container"
-  );
-  pokemonsOptionsContainer.style.display = "flex";
-  pokemonsOptionsContainer.style.gap = "40px";
-
   pokemonsOptionsContainer.innerHtml = "";
 
   pokemons.forEach((pokemon, index) => {
+    //kort
     const card = document.createElement("div");
-    card.innerHTML = `<img src="${pokemon.sprites.front_default}" alt="">  <p>HP: ${pokemon.stats.hp}</p> <p>Attack: ${pokemon.stats.attack}</p> <p>Defense: ${pokemon.stats.defense}</p>`;
+    card.innerHTML = `<img src="${pokemon.sprites.front_default}" alt=""> 
+    <p style="font-weight:bold;">${pokemon.name}</p>  
+    <p>HP: ${pokemon.stats.hp}</p> 
+    <p>Attack: ${pokemon.stats.attack}</p> 
+    <p>Defense: ${pokemon.stats.defense}</p>`;
 
+    //btn
     const selectBtn = document.createElement("button");
-    selectBtn.innerHTML = `${pokemon.name}, I choose you!`;
+    selectBtn.innerHTML = `${pokemon.name},<br> I choose you!`;
+    selectBtn.classList.add("btn");
     selectBtn.addEventListener("click", function () {
-      console.log("Du valgte: ", pokemon.name);
+      selectPokemon(index);
     });
 
+    card.append(selectBtn);
     pokemonsOptionsContainer.append(card);
   });
 }
 
-fetchPokemons();
+function selectPokemon(index) {
+  yourPokemon = pokemons[index];
+  console.log("Du valgte: ", yourPokemon.name);
+  selectRandomEnemy();
+}
+
+function selectRandomEnemy() {
+  //filtrerer ut spillers valgte pokemon
+  const potentialEnemyPokemons = pokemons.filter(
+    (pokemon) => pokemon !== yourPokemon
+  );
+  //finner en random av de to gjenværende pokemons
+  const randomIndex = Math.floor(Math.random() * potentialEnemyPokemons.length);
+
+  enemyPokemon = potentialEnemyPokemons[randomIndex];
+  console.log("Din motstander: ", enemyPokemon);
+}

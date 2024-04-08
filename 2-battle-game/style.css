@@ -10,3 +10,18 @@ body {
 #select-pokemon-container {
   text-align: center;
 }
+
+#pokemon-options-container {
+  display: flex;
+  gap: 80px;
+}
+
+.btn {
+  background-color: #3a57a1;
+  color: white;
+  border: none;
+  box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+  padding: 5px;
+  min-width: 70px;
+  padding: 5px;
+}
