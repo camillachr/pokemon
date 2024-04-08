@@ -1,10 +1,8 @@
 const selectPokemonContainer = document.querySelector(
   "#select-pokemon-container"
 );
-
 const gameCointainer = document.querySelector("#game-container");
 const healthBar = document.querySelector("#health-bar");
-
 const battleGround = document.querySelector("#battle-ground");
 const movePanel = document.querySelector("#move-panel");
 const message = document.querySelector("#message");
@@ -17,7 +15,7 @@ let enemyPokemon;
 async function fetchPokemons() {
   try {
     const pokemonsToFetch = ["squirtle", "charmander", "bulbasaur"];
-    for (i = 0; i < pokemonsToFetch.length; i++) {
+    for (let i = 0; i < pokemonsToFetch.length; i++) {
       const response = await fetch(
         `https://pokeapi.co/api/v2/pokemon/${pokemonsToFetch[i]}`
       );
@@ -39,19 +37,52 @@ async function fetchPokemons() {
           { name: data.moves[3].move.name, url: data.moves[3].move.url },
         ],
       };
+
       pokemons.push(pokemon);
     }
     showPokemons();
-    console.log(pokemons);
+    updateMoveDetails();
   } catch (error) {
     console.error("Kunne ikke hente pokemons", error);
   }
 }
+
 fetchPokemons();
 
-// FETCH MOVES
-async function fetchMoveDetails() {
-  // fetche alle moves og gjøre hva?
+// FETCH MOVES -----------------------------
+//Looper igjennom, fetcher fra moves URL og oppdaterer pokemon moves med detaljer
+async function fetchAndUpdateMoveDetails(pokemon) {
+  try {
+    let movesWithDetails = []; //midlertidig lagring av nye moves
+    for (let i = 0; i < pokemon.moves.length; i++) {
+      const moveUrl = pokemon.moves[i].url;
+      const response = await fetch(moveUrl);
+      const data = await response.json();
+      const move = {
+        name: data.name,
+        power: data.power,
+        accuracy: data.accuracy,
+        pp: data.pp,
+      };
+      movesWithDetails.push(move);
+    }
+    //erstatter move url med fetchede detaljer
+    pokemon.moves = movesWithDetails;
+  } catch (error) {
+    console.error("Kunne ikke hente moves", error);
+  }
+}
+
+//Looper igjennom alle 3 pokemons
+async function updateMoveDetails() {
+  try {
+    for (let i = 0; i < pokemons.length; i++) {
+      await fetchAndUpdateMoveDetails(pokemons[i]);
+    }
+    console.log("Pokemons", pokemons);
+  } catch (error) {
+    console.log("Kunne ikke oppdatere move detaljer", error);
+  }
 }
 
 // VIS POKEMONS ------------------------------------------
@@ -108,17 +139,18 @@ function launchGame() {
   gameCointainer.classList.remove("hidden");
   updateHealthBar();
   showPokemonPlayers();
+  updateMovePanel();
 }
 
 // OPPDATER HEALTH BAR
 function updateHealthBar() {
   //Din pokemon HP
   const yourPokemonHealth = document.querySelector("#your-pokemon-health");
-  yourPokemonHealth.innerHTML = `<p>${yourPokemon.name} HP: ${yourPokemon.stats.hp} / ${yourPokemon.stats.baseHp}</p>`;
+  yourPokemonHealth.innerHTML = `<p>Din pokemon <br> ${yourPokemon.name} HP: ${yourPokemon.stats.hp} / ${yourPokemon.stats.baseHp}</p>`;
 
   //Motstanders pokemon HP
   const enemyPokemonHealth = document.querySelector("#enemy-pokemon-health");
-  enemyPokemonHealth.innerHTML = `<p>${enemyPokemon.name} HP: ${enemyPokemon.stats.hp} / ${enemyPokemon.stats.baseHp}</p>`;
+  enemyPokemonHealth.innerHTML = `<p>Motstander <br>${enemyPokemon.name} HP: ${enemyPokemon.stats.hp} / ${enemyPokemon.stats.baseHp}</p>`;
 }
 
 // VIS SPILLERE
@@ -143,11 +175,22 @@ function showPokemonPlayers() {
 
 // OPPDATER MOVE PANEL
 function updateMovePanel() {
-  //viser moves i move-panel
+  yourPokemon.moves.forEach((move) => {
+    const moveBtn = document.createElement("button");
+    moveBtn.innerHTML = `${move.name}`;
+    moveBtn.classList.add("move-btn");
+    moveBtn.addEventListener("click", function () {
+      attack(move, yourPokemon, enemyPokemon);
+    });
+
+    movePanel.append(moveBtn);
+  });
 }
 
 // ATTACK -----------------------------------------------------
-function attack(move, attacker, defender) {}
+function attack(move, attacker, defender) {
+  console.log("Inne i attack");
+}
 
 function calculateDamage() {
   //regn ut damage med attack, defense osv
