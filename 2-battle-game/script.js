@@ -15,6 +15,7 @@ const message = document.querySelector("#message");
 
 let gameIsOver = false;
 let pokemons = [];
+let berries = [];
 let yourPokemon;
 let enemyPokemon;
 
@@ -91,6 +92,51 @@ async function updateMoveDetails() {
   }
 }
 
+// Fetch berries
+async function fetchBerryUrls() {
+  try {
+    let berriesToFetch = ["razz", "oran", "sitrus", "durin"];
+    let berryUrls = [];
+
+    for (let i = 0; i < berriesToFetch.length; i++) {
+      const response = await fetch(
+        `https://pokeapi.co/api/v2/berry/${berriesToFetch[i]}`
+      );
+      const data = await response.json();
+      const berryUrl = data.item.url;
+      berryUrls.push(berryUrl);
+    }
+
+    return berryUrls;
+  } catch (error) {
+    console.error("Kunne ikke hente berries", error);
+  }
+}
+
+// fetch berries
+async function fetchBerries() {
+  try {
+    const berryUrls = await fetchBerryUrls();
+
+    for (let i = 0; i < berryUrls.length; i++) {
+      const url = berryUrls[i];
+      const response = await fetch(url);
+      const data = await response.json();
+
+      const berry = {
+        name: data.name,
+        img: data.sprites.default,
+      };
+
+      berries.push(berry);
+    }
+    console.log("berries", berries);
+  } catch (error) {
+    console.error("Kunne ikke hente berries", error);
+  }
+}
+
+fetchBerries();
 // VIS POKEMONS ------------------------------------------
 function showPokemons() {
   const pokemonsContainer = document.querySelector("#pokemons-container");
@@ -203,7 +249,10 @@ function attack(move) {
   //Gi spiller melding
   message.innerHTML = `Din ${yourPokemon.name} tok en  ${move.name} med ${damage} damage!`;
 
+  //Animasjoner
+  damageAnimation(damage, enemyPokemonImg);
   moveAnimation(yourPokemonImg, "attack");
+
   movePanel.innerHTML = "";
   updateHealthBar();
   checkHealth();
@@ -243,6 +292,8 @@ function counterAttack() {
 
   message.innerHTML = `${enemyPokemon.name} gjorde en  ${randomMove.name} med ${damage} damage!`;
 
+  // animasjoner
+  damageAnimation(damage, yourPokemonImg);
   moveAnimation(enemyPokemonImg, "counter-attack");
 }
 
@@ -252,6 +303,22 @@ function moveAnimation(pokemonImg, attackType) {
   setTimeout(function () {
     pokemonImg.classList.remove(`${attackType}`);
   }, 500);
+}
+
+function damageAnimation(damage, defenderImg) {
+  const damageTxt = document.createElement("p");
+  damageTxt.innerHTML = `- ${damage}`;
+  damageTxt.style.position = "absolute";
+  damageTxt.style.top = "10%";
+  damageTxt.style.left = "50%";
+  damageTxt.style.transform = "translate(-50%, -50%)"; // Sentrering
+  damageTxt.style.color = "white";
+  damageTxt.style.fontWeight = "bold";
+
+  defenderImg.append(damageTxt);
+  setTimeout(function () {
+    damageTxt.remove();
+  }, 3000);
 }
 
 // Sjekk HP
