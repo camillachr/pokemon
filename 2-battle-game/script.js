@@ -264,8 +264,8 @@ function attack(move) {
   message.innerHTML = `Din ${yourPokemon.name} tok en ${move.name}! ${feedback}`;
   movePanel.innerHTML = "";
 
-  checkHealth();
   showHp();
+  checkHealth();
 
   hpAnimation("damage", damage, enemyPokemonImg);
   moveAnimation(yourPokemonImg, "attack");
@@ -283,14 +283,14 @@ function counterAttack() {
   const randomMove = chooseRandomItem(enemyMoves);
 
   const damage = calculateAndDoDamage(randomMove, enemyPokemon, yourPokemon);
+
   const feedback = chooseRandomItem(negativeFeedback);
-  console.log(feedback);
   message.innerHTML = `${feedback + enemyPokemon.name} gjorde en ${
     randomMove.name
   }!`;
 
-  checkHealth();
   showHp();
+  checkHealth();
 
   hpAnimation("damage", damage, yourPokemonImg);
   moveAnimation(enemyPokemonImg, "counter-attack");
