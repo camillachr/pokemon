@@ -13,6 +13,7 @@ const enemyPokemonHealth = document.querySelector("#enemy-pokemon-health");
 const movePanel = document.querySelector("#move-panel");
 const message = document.querySelector("#message");
 
+let gameIsOver = false;
 let pokemons = [];
 let yourPokemon;
 let enemyPokemon;
@@ -202,18 +203,20 @@ function attack(move) {
   //Gi spiller melding
   message.innerHTML = `Din ${yourPokemon.name} tok en  ${move.name} med ${damage} damage!`;
 
-  moveAnimation(yourPokemonImg);
+  moveAnimation(yourPokemonImg, "attack");
   movePanel.innerHTML = "";
   updateHealthBar();
   checkHealth();
 
-  setTimeout(function () {
-    counterAttack();
-  }, 2000);
-  setTimeout(function () {
-    updateMovePanel();
-    checkHealth();
-  }, 4000);
+  if (gameIsOver === false) {
+    setTimeout(function () {
+      counterAttack();
+    }, 2000);
+    setTimeout(function () {
+      updateMovePanel();
+      checkHealth();
+    }, 4000);
+  }
 }
 
 function calculateAndDoDamage(move, attacker, defender) {
@@ -240,14 +243,14 @@ function counterAttack() {
 
   message.innerHTML = `${enemyPokemon.name} gjorde en  ${randomMove.name} med ${damage} damage!`;
 
-  moveAnimation(enemyPokemonImg);
+  moveAnimation(enemyPokemonImg, "counter-attack");
 }
 
 // Animasjon på pokemonen som gjør et move
-function moveAnimation(pokemonImg) {
-  pokemonImg.classList.add("attack");
+function moveAnimation(pokemonImg, attackType) {
+  pokemonImg.classList.add(`${attackType}`);
   setTimeout(function () {
-    pokemonImg.classList.remove("attack");
+    pokemonImg.classList.remove(`${attackType}`);
   }, 500);
 }
 
@@ -267,6 +270,7 @@ function checkHealth() {
 }
 
 function endGame() {
+  gameIsOver = true;
   //Tøm move panel
   movePanel.innerHTML = "";
   message.innerHTML = "";
