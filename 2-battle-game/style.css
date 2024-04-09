@@ -54,7 +54,7 @@ body {
 
 #move-panel {
   height: 50px;
-  background-color: #f7c505;
+  background-color: #f6da6c;
   color: #3a57a1;
   bottom: 0;
   display: flex;
@@ -67,7 +67,7 @@ body {
 
 .move-btn {
   flex: 25;
-  background-color: #f7c505;
+  background-color: #f6da6c;
   color: #3a57a1;
   border: none;
 }

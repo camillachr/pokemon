@@ -13,10 +13,10 @@ const enemyPokemonHealth = document.querySelector("#enemy-pokemon-health");
 const movePanel = document.querySelector("#move-panel");
 const message = document.querySelector("#message");
 
+const positiveFeedback = ["Rått! ", "Wow! ", "Godt jobba! ", "Fantastisk!"];
+const negativeFeedback = ["Ouch, ", "Pass opp, ", "Aaiiii, ", "Oouufff, "];
 let gameIsOver = false;
 let berryClicked = false;
-const positiveFeedback = ["Kult,", "Wow,", "Godt jobba,", "Supert,"];
-const negativeFeedback = ["Ånei,", "Oops,", "Aaiiii,", "Huff,"];
 let pokemons = [];
 let berries = [];
 let yourPokemon;
@@ -59,7 +59,7 @@ async function fetchAndShowPokemons() {
 }
 
 // FETCH MOVES -----------------------------
-//Looper igjennom, fetcher fra moves URL og oppdaterer pokemon moves med detaljer
+// Looper igjennom, fetcher fra moves URL og oppdaterer pokemon moves med detaljer
 async function fetchAndUpdateMoveDetails(pokemon) {
   try {
     let movesWithDetails = []; //midlertidig lagring av nye moves
@@ -81,15 +81,14 @@ async function fetchAndUpdateMoveDetails(pokemon) {
   }
 }
 
-//Looper igjennom alle 3 pokemons
+// Looper igjennom alle 3 pokemons for move-fetching
 async function updateMoveDetails() {
   try {
     for (let i = 0; i < pokemons.length; i++) {
       await fetchAndUpdateMoveDetails(pokemons[i]);
     }
-    console.log("Pokemons", pokemons);
   } catch (error) {
-    console.log("Kunne ikke oppdatere move detaljer", error);
+    console.error("Kunne ikke oppdatere move detaljer", error);
   }
 }
 
@@ -97,7 +96,16 @@ async function updateMoveDetails() {
 // Fetcher URL-er
 async function fetchBerryUrls() {
   try {
-    let berriesToFetch = ["razz", "oran", "sitrus", "durin"];
+    let berriesToFetch = [
+      "razz",
+      "oran",
+      "sitrus",
+      "durin",
+      "pecha",
+      "cheri",
+      "leppa",
+      "wiki",
+    ];
     let berryUrls = [];
 
     for (let i = 0; i < berriesToFetch.length; i++) {
@@ -132,7 +140,6 @@ async function fetchBerries() {
 
       berries.push(berry);
     }
-    console.log("berries", berries);
   } catch (error) {
     console.error("Kunne ikke hente berries", error);
   }
@@ -144,7 +151,7 @@ function showPokemons() {
   pokemonsContainer.innerHtml = "";
 
   pokemons.forEach((pokemon, index) => {
-    //kort
+    // "kort"
     const card = document.createElement("div");
     card.innerHTML = `<img src="${pokemon.sprites.front_default}" alt=""> 
     <p style="font-weight:bold;">${pokemon.name}</p>  
@@ -152,7 +159,7 @@ function showPokemons() {
     <p>Attack: ${pokemon.stats.attack}</p> 
     <p>Defense: ${pokemon.stats.defense}</p>`;
 
-    //btn
+    // btn
     const selectBtn = document.createElement("button");
     selectBtn.innerHTML = `${pokemon.name},<br> jeg velger deg!`;
     selectBtn.classList.add("btn");
@@ -168,7 +175,6 @@ function showPokemons() {
 // VELG POKEMON
 function selectPokemon(index) {
   yourPokemon = pokemons[index];
-  console.log("Du valgte: ", yourPokemon.name);
   selectRandomEnemy();
 }
 
@@ -178,11 +184,10 @@ function selectRandomEnemy() {
   const potentialEnemyPokemons = pokemons.filter(
     (pokemon) => pokemon !== yourPokemon
   );
-  //finner en random av de to gjenværende pokemons
-  const randomIndex = Math.floor(Math.random() * potentialEnemyPokemons.length);
 
-  enemyPokemon = potentialEnemyPokemons[randomIndex];
-  console.log("Din motstander: ", enemyPokemon.name);
+  //finner en random av de to gjenværende pokemons
+  enemyPokemon = chooseRandomItem(potentialEnemyPokemons);
+
   launchGame();
 }
 
@@ -194,19 +199,21 @@ function launchGame() {
   const hint = document.querySelector("#hint");
   hint.classList.remove("hidden");
 
-  updateHealthBar();
+  showHp();
   showPokemonPlayers();
   updateMovePanel();
 }
 
-// OPPDATER HEALTH BAR
-function updateHealthBar() {
-  if (yourPokemonHealth < 0) {
-    yourPokemonHealth = 0;
+// VIS HP / BASE HP
+function showHp() {
+  // Unngår å vise negativ HP
+  if (yourPokemon.stats.hp < 0) {
+    yourPokemon.stats.hp = 0;
   }
-  if (enemyPokemonHealth < 0) {
-    enemyPokemonHealth = 0;
+  if (enemyPokemon.stats.hp < 0) {
+    enemyPokemon.stats.hp = 0;
   }
+
   yourPokemonHealth.innerHTML = `<p> ${yourPokemon.name} HP: <strong > ${yourPokemon.stats.hp} / ${yourPokemon.stats.baseHp}</strong></p>`;
   enemyPokemonHealth.innerHTML = `<p>${enemyPokemon.name} HP: <strong>${enemyPokemon.stats.hp} / ${enemyPokemon.stats.baseHp}</strong></p>`;
 }
@@ -233,6 +240,7 @@ function showPokemonPlayers() {
 // OPPDATER MOVE PANEL
 function updateMovePanel() {
   movePanel.innerHTML = "";
+
   yourPokemon.moves.forEach((move) => {
     const moveBtn = document.createElement("button");
     moveBtn.innerHTML = `${move.name.toUpperCase()}`;
@@ -248,31 +256,58 @@ function updateMovePanel() {
 
 // ATTACK -----------------------------------------------------
 function attack(move) {
-  //nullstille berryClicked
   berryClicked = false;
 
-  //Kalkuler damage og reduser HP
   const damage = calculateAndDoDamage(move, yourPokemon, enemyPokemon);
 
-  //Gi spiller melding
-  message.innerHTML = `Din ${yourPokemon.name} tok en ${move.name}!`;
+  const feedback = chooseRandomItem(positiveFeedback);
+  message.innerHTML = `Din ${yourPokemon.name} tok en ${move.name}! ${feedback}`;
+  movePanel.innerHTML = "";
 
-  //Animasjoner
+  checkHealth();
+  showHp();
+
   hpAnimation("damage", damage, enemyPokemonImg);
   moveAnimation(yourPokemonImg, "attack");
 
-  movePanel.innerHTML = "";
-  updateHealthBar();
-  checkHealth();
-
-  if (gameIsOver === false) {
+  if (!gameIsOver) {
     setTimeout(function () {
       counterAttack();
     }, 2000);
+  }
+}
+
+// COUNTER ATTACK
+function counterAttack() {
+  const enemyMoves = enemyPokemon.moves;
+  const randomMove = chooseRandomItem(enemyMoves);
+
+  const damage = calculateAndDoDamage(randomMove, enemyPokemon, yourPokemon);
+  const feedback = chooseRandomItem(negativeFeedback);
+  console.log(feedback);
+  message.innerHTML = `${feedback + enemyPokemon.name} gjorde en ${
+    randomMove.name
+  }!`;
+
+  checkHealth();
+  showHp();
+
+  hpAnimation("damage", damage, yourPokemonImg);
+  moveAnimation(enemyPokemonImg, "counter-attack");
+
+  if (!gameIsOver) {
+    // 45% sjanse for at berry blir lagt ut
+    setTimeout(function () {
+      let chance = Math.random();
+      if (chance < 0.45) {
+        showBerry();
+      }
+    }, 3000);
+
     setTimeout(function () {
       updateMovePanel();
-      checkHealth();
     }, 4000);
+  } else if (gameIsOver) {
   }
 }
 
@@ -291,40 +326,16 @@ function calculateAndDoDamage(move, attacker, defender) {
   return damage;
 }
 
-// MOTANGREP
-function counterAttack() {
-  //Finner et random move fra motstander pokemon
-  const randomMove =
-    enemyPokemon.moves[Math.floor(Math.random() * enemyPokemon.moves.length)];
-
-  //Kalkuler damage og reduser HP
-  const damage = calculateAndDoDamage(randomMove, enemyPokemon, yourPokemon);
-
-  message.innerHTML = `${enemyPokemon.name} gjorde en ${randomMove.name}!`;
-
-  // animasjoner
-  hpAnimation("damage", damage, yourPokemonImg);
-  moveAnimation(enemyPokemonImg, "counter-attack");
-
-  // 40% sjanse for at berry blir lagt ut
-  setTimeout(function () {
-    let chance = Math.random();
-    if (chance < 0.4) {
-      showBerry();
-    } else {
-      console.log("Ingen berry ble lagt ut");
-    }
-  }, 3000);
-}
-
 // SJEKKER HP
 function checkHealth() {
   if (yourPokemon.stats.hp <= 0) {
+    gameIsOver = true;
     yourPokemonImg.remove();
     yourPokemonHealth.innerHTML = `${yourPokemon.name} har besvimt.`;
     enemyPokemonHealth.innerHTML = `${enemyPokemon.name} vinner!`;
     endGame();
   } else if (enemyPokemon.stats.hp <= 0) {
+    gameIsOver = true;
     enemyPokemonImg.remove();
     enemyPokemonHealth.innerHTML = `${enemyPokemon.name} har besvimt.`;
     yourPokemonHealth.innerHTML = `${yourPokemon.name} vinner!`;
@@ -356,7 +367,6 @@ function hpAnimation(type, change, pokemonImg) {
   }
 
   changeTxt.style.position = "absolute";
-  changeTxt.style.top = "10%";
   changeTxt.style.left = "50%";
   changeTxt.style.transform = "translate(-50%, -50%)"; // Sentrering
   changeTxt.style.fontWeight = "bold";
@@ -373,7 +383,7 @@ function hpAnimation(type, change, pokemonImg) {
 
 // VIS BERRY
 function showBerry() {
-  const randomBerry = berries[Math.floor(Math.random() * berries.length)];
+  const randomBerry = chooseRandomItem(berries);
   const berryImg = document.createElement("div");
   berryImg.innerHTML = `<img src="${randomBerry.img}" width="40px;">`;
   berryImg.style.position = "absolute";
@@ -383,27 +393,27 @@ function showBerry() {
   const left = randomPercent();
   berryImg.style.top = top;
   berryImg.style.left = left;
-  console.log("top: ", top, "left: ", left);
 
   //eventlistener
   berryImg.addEventListener("click", function () {
     berryClicked = true;
     berryBooster(randomBerry);
+    berryImg.remove();
   });
 
   battleGround.append(berryImg);
 
   //fjern etter 2 sek og motstander får berryBooster
   setTimeout(function () {
-    berryImg.remove();
     if (!berryClicked) {
-      berryBooster(randomBerry);
+      berryImg.remove();
+      berryBooster();
     }
   }, 2000);
 }
 
 // BERRY BOOSTER
-function berryBooster(berry) {
+function berryBooster() {
   //generer random berryBoost mellom 1 og 4
   const berryBoost = Math.floor(Math.random() * 4) + 1;
 
@@ -416,22 +426,26 @@ function berryBooster(berry) {
     hpAnimation("berryBoost", berryBoost, enemyPokemonImg);
   }
 }
+
 // generer random prosent for plassering av berry
-randomPercent();
 function randomPercent() {
-  //% mellom 10 og 90 (slik at berry ikke vises delvis utenfor vinduet)
+  // % mellom 10 og 90 (slik at berry ikke vises delvis utenfor vinduet)
   const randomPercent = Math.floor(Math.random() * 80 + 10) + "%";
   return randomPercent;
 }
 
+// random-velger
+function chooseRandomItem(array) {
+  const randomItem = array[Math.floor(Math.random() * array.length)];
+  return randomItem;
+}
+
 // SPILLET ER OVER -----------------------------------
 function endGame() {
-  gameIsOver = true;
-  //Tøm move panel
   movePanel.innerHTML = "";
   message.innerHTML = "";
 
-  //Start nytt spill knapp
+  //Start nytt spill-knapp
   const startNewGameBtn = document.createElement("button");
   startNewGameBtn.classList.add("btn");
   startNewGameBtn.innerHTML = "Start nytt spill";
