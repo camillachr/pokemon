@@ -5,7 +5,7 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 50px;
+  gap: 30px;
 }
 
 #select-pokemon-container {
@@ -15,6 +15,10 @@ body {
 #pokemons-container {
   display: flex;
   gap: 80px;
+}
+
+#hint {
+  margin: 0;
 }
 
 #game-container {
@@ -48,17 +52,6 @@ body {
   overflow: hidden;
 }
 
-.pokemon {
-  transition: transform 0.3s ease;
-}
-
-.attack {
-  transform: rotate(20deg);
-}
-.counter-attack {
-  transform: rotate(-20deg);
-}
-
 #move-panel {
   height: 50px;
   background-color: #f7c505;
@@ -90,6 +83,7 @@ body {
 
 .btn {
   background-color: #3a57a1;
+  color: #6aff00;
   color: white;
   border: none;
   box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
@@ -100,4 +94,24 @@ body {
 
 .hidden {
   display: none;
+}
+
+.pokemon {
+  transition: transform 0.3s ease;
+}
+
+.attack {
+  transform: rotate(20deg);
+}
+.counter-attack {
+  transform: rotate(-20deg);
+}
+
+@keyframes slide-up {
+  0% {
+    top: 20%;
+  }
+  100% {
+    top: -20%;
+  }
 }
