@@ -5,7 +5,9 @@ const gameCointainer = document.querySelector("#game-container");
 const healthBar = document.querySelector("#health-bar");
 const battleGround = document.querySelector("#battle-ground");
 const yourPokemonImg = document.createElement("div");
+yourPokemonImg.classList.add("pokemon");
 const enemyPokemonImg = document.createElement("div");
+enemyPokemonImg.classList.add("pokemon");
 const yourPokemonHealth = document.querySelector("#your-pokemon-health");
 const enemyPokemonHealth = document.querySelector("#enemy-pokemon-health");
 const movePanel = document.querySelector("#move-panel");
@@ -153,8 +155,8 @@ function updateHealthBar() {
   if (enemyPokemonHealth < 0) {
     enemyPokemonHealth = 0;
   }
-  yourPokemonHealth.innerHTML = `<p> ${yourPokemon.name} HP: ${yourPokemon.stats.hp} / ${yourPokemon.stats.baseHp}</p>`;
-  enemyPokemonHealth.innerHTML = `<p>${enemyPokemon.name} HP: ${enemyPokemon.stats.hp} / ${enemyPokemon.stats.baseHp}</p>`;
+  yourPokemonHealth.innerHTML = `<p> ${yourPokemon.name} HP: <strong > ${yourPokemon.stats.hp} / ${yourPokemon.stats.baseHp}</strong></p>`;
+  enemyPokemonHealth.innerHTML = `<p>${enemyPokemon.name} HP: <strong>${enemyPokemon.stats.hp} / ${enemyPokemon.stats.baseHp}</strong></p>`;
 }
 
 // VIS SPILLERE
@@ -184,7 +186,7 @@ function updateMovePanel() {
     moveBtn.innerHTML = `${move.name.toUpperCase()}`;
     moveBtn.classList.add("move-btn");
     moveBtn.addEventListener("click", function () {
-      attack(move, yourPokemon, enemyPokemon);
+      attack(move);
     });
 
     movePanel.append(moveBtn);
@@ -193,7 +195,28 @@ function updateMovePanel() {
 }
 
 // ATTACK -----------------------------------------------------
-function attack(move, attacker, defender) {
+function attack(move) {
+  //Kalkuler damage og reduser HP
+  const damage = calculateAndDoDamage(move, yourPokemon, enemyPokemon);
+
+  //Gi spiller melding
+  message.innerHTML = `Din ${yourPokemon.name} tok en  ${move.name} med ${damage} damage!`;
+
+  moveAnimation(yourPokemonImg);
+  movePanel.innerHTML = "";
+  updateHealthBar();
+  checkHealth();
+
+  setTimeout(function () {
+    counterAttack();
+  }, 2000);
+  setTimeout(function () {
+    updateMovePanel();
+    checkHealth();
+  }, 4000);
+}
+
+function calculateAndDoDamage(move, attacker, defender) {
   const attack = attacker.stats.attack;
   const defense = defender.stats.defense;
   const movePower = move.power;
@@ -204,30 +227,31 @@ function attack(move, attacker, defender) {
   );
 
   defender.stats.hp -= damage;
-  updateHealthBar();
-  checkHealth();
-  if (attacker == enemyPokemon) {
-    message.innerHTML = `${attacker.name} gjorde en ${move.name} med ${damage} damage!`;
-  } else {
-    message.innerHTML = `Din ${attacker.name} tok en ${move.name} med ${damage} damage!`;
-    movePanel.innerHTML = "";
-    setTimeout(function () {
-      counterAttack();
-    }, 2000);
-    setTimeout(function () {
-      updateMovePanel();
-      checkHealth();
-    }, 4000);
-  }
+  return damage;
 }
 
 function counterAttack() {
+  //Finner et random move fra motstander pokemon
   const randomMove =
     enemyPokemon.moves[Math.floor(Math.random() * enemyPokemon.moves.length)];
 
-  attack(randomMove, enemyPokemon, yourPokemon);
+  //Kalkuler damage og reduser HP
+  const damage = calculateAndDoDamage(randomMove, enemyPokemon, yourPokemon);
+
+  message.innerHTML = `${enemyPokemon.name} gjorde en  ${randomMove.name} med ${damage} damage!`;
+
+  moveAnimation(enemyPokemonImg);
 }
 
+// Animasjon på pokemonen som gjør et move
+function moveAnimation(pokemonImg) {
+  pokemonImg.classList.add("attack");
+  setTimeout(function () {
+    pokemonImg.classList.remove("attack");
+  }, 500);
+}
+
+// Sjekk HP
 function checkHealth() {
   if (yourPokemon.stats.hp <= 0) {
     yourPokemonImg.remove();

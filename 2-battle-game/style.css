@@ -48,6 +48,14 @@ body {
   overflow: hidden;
 }
 
+.pokemon {
+  transition: transform 0.3s ease;
+}
+
+.pokemon.attack {
+  transform: rotate(10deg);
+}
+
 #move-panel {
   height: 50px;
   background-color: #f7c505;
