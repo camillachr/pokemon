@@ -418,15 +418,6 @@ function showBerry() {
     }
   }, 2000);
 }
-/*
-TEST KNAPP
-const testBtn = document.createElement("button");
-testBtn.innerHTML = "test";
-testBtn.onclick = showVirus;
-document.body.append(testBtn);
-*/
-
-//showVirus();
 
 function showVirus() {
   let virusClicked = false;

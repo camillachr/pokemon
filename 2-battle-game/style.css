@@ -106,7 +106,6 @@ body {
 }
 .counter-attack {
   transform: rotate(-20deg);
-  filter: drop-shadow(5px 5px 5px rgba(255, 255, 255))"
 }
 
 @keyframes slide-up {
