@@ -7,10 +7,7 @@ const savedPokemonContainer = document.querySelector(
 );
 const newPokemonBtn = document
   .querySelector("#new-pokemon-btn")
-  .addEventListener("click", function () {
-    makeNewPokemon();
-  });
-
+  .addEventListener("click", makeNewPokemon);
 let savedPokemons = [];
 let myPokemons = [];
 let fetchedPokemons = [];
@@ -77,7 +74,7 @@ async function fetchAndShowPokemons() {
 // Hent lagrede selvlagde pokemons
 function pushMyPokemonsToAllPokemons() {
   myPokemons = JSON.parse(localStorage.getItem("myPokemons")) || [];
-  allPokemons = myPokemons.concat(fetchedPokemons); //lært av Anders
+  allPokemons = myPokemons.concat(fetchedPokemons);
 }
 
 // VIS ALLE POKEMONS -------------------------------------------------
@@ -127,10 +124,12 @@ async function showPokemons() {
         deletePokemon(index);
       });
 
+      // button container
       const buttonContainer = document.createElement("div");
       buttonContainer.style.display = "flex";
       buttonContainer.style.flexDirection = "column";
       buttonContainer.style.gap = "5px";
+
       //append
       buttonContainer.append(saveBtn, deleteBtn, editBtn);
       card.append(buttonContainer);
@@ -170,11 +169,13 @@ async function createAndShowFilter() {
 
 // Toggle filter knapp
 function toggleFilterButton(clickedBtn) {
-  filterButtons.forEach((button) =>
-    button === clickedBtn
-      ? clickedBtn.classList.toggle("active")
-      : button.classList.remove("active")
-  );
+  filterButtons.forEach((button) => {
+    if (button === clickedBtn) {
+      clickedBtn.classList.toggle("active");
+    } else {
+      button.classList.remove("active");
+    }
+  });
 }
 
 // LAG DIN EGEN POKEMON ----------------------------------------------------
