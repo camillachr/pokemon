@@ -1,17 +1,18 @@
+// GLOBALE VARIABLER
 const selectPokemonContainer = document.querySelector(
   "#select-pokemon-container"
 );
 const gameCointainer = document.querySelector("#game-container");
 const healthBar = document.querySelector("#health-bar");
 const battleGround = document.querySelector("#battle-ground");
+const yourPokemonHP = document.querySelector("#your-pokemon-health");
+const enemyPokemonHP = document.querySelector("#enemy-pokemon-health");
+const movePanel = document.querySelector("#move-panel");
+const message = document.querySelector("#message");
 const yourPokemonImg = document.createElement("div");
 yourPokemonImg.classList.add("pokemon");
 const enemyPokemonImg = document.createElement("div");
 enemyPokemonImg.classList.add("pokemon");
-const yourPokemonHealth = document.querySelector("#your-pokemon-health");
-const enemyPokemonHealth = document.querySelector("#enemy-pokemon-health");
-const movePanel = document.querySelector("#move-panel");
-const message = document.querySelector("#message");
 
 const positiveFeedback = ["Rått! ", "Wow! ", "Godt jobba! ", "Fantastisk!"];
 const negativeFeedback = ["Ouch, ", "Pass opp, ", "Aaiiii, ", "Oouufff, "];
@@ -214,8 +215,8 @@ function showHp() {
     enemyPokemon.stats.hp = 0;
   }
 
-  yourPokemonHealth.innerHTML = `<p> ${yourPokemon.name} HP: <strong > ${yourPokemon.stats.hp} / ${yourPokemon.stats.baseHp}</strong></p>`;
-  enemyPokemonHealth.innerHTML = `<p>${enemyPokemon.name} HP: <strong>${enemyPokemon.stats.hp} / ${enemyPokemon.stats.baseHp}</strong></p>`;
+  yourPokemonHP.innerHTML = `<p> ${yourPokemon.name} HP: <strong > ${yourPokemon.stats.hp} / ${yourPokemon.stats.baseHp}</strong></p>`;
+  enemyPokemonHP.innerHTML = `<p>${enemyPokemon.name} HP: <strong>${enemyPokemon.stats.hp} / ${enemyPokemon.stats.baseHp}</strong></p>`;
 }
 
 // VIS SPILLERE
@@ -296,18 +297,23 @@ function counterAttack() {
   moveAnimation(enemyPokemonImg, "counter-attack");
 
   if (!gameIsOver) {
-    // 45% sjanse for at berry blir lagt ut
     setTimeout(function () {
+      // 60% sjanse for at berry/virus blir lagt ut
       let chance = Math.random();
-      if (chance < 0.45) {
-        showBerry();
+      if (chance < 0.6) {
+        let virusChance = Math.random();
+        // 1/3 av tilfellene legges virus ut
+        if (virusChance < 0.33) {
+          showVirus();
+        } else {
+          showBerry();
+        }
       }
+
+      updateMovePanel();
     }, 3000);
 
-    setTimeout(function () {
-      updateMovePanel();
-    }, 4000);
-  } else if (gameIsOver) {
+    // setTimeout(function () {    }, 5000);
   }
 }
 
@@ -331,14 +337,14 @@ function checkHealth() {
   if (yourPokemon.stats.hp <= 0) {
     gameIsOver = true;
     yourPokemonImg.remove();
-    yourPokemonHealth.innerHTML = `${yourPokemon.name} har besvimt.`;
-    enemyPokemonHealth.innerHTML = `${enemyPokemon.name} vinner!`;
+    yourPokemonHP.innerHTML = `${yourPokemon.name} har besvimt.`;
+    enemyPokemonHP.innerHTML = `${enemyPokemon.name} vinner!`;
     endGame();
   } else if (enemyPokemon.stats.hp <= 0) {
     gameIsOver = true;
     enemyPokemonImg.remove();
-    enemyPokemonHealth.innerHTML = `${enemyPokemon.name} har besvimt.`;
-    yourPokemonHealth.innerHTML = `${yourPokemon.name} vinner!`;
+    enemyPokemonHP.innerHTML = `${enemyPokemon.name} har besvimt.`;
+    yourPokemonHP.innerHTML = `${yourPokemon.name} vinner!`;
     endGame();
   }
 }
@@ -384,11 +390,12 @@ function hpAnimation(type, change, pokemonImg) {
 // VIS BERRY
 function showBerry() {
   const randomBerry = chooseRandomItem(berries);
+
   const berryImg = document.createElement("div");
   berryImg.innerHTML = `<img src="${randomBerry.img}" width="40px;">`;
-  berryImg.style.position = "absolute";
 
   // random plassering
+  berryImg.style.position = "absolute";
   const top = randomPercent();
   const left = randomPercent();
   berryImg.style.top = top;
@@ -411,6 +418,47 @@ function showBerry() {
     }
   }, 2000);
 }
+/*
+TEST KNAPP
+const testBtn = document.createElement("button");
+testBtn.innerHTML = "test";
+testBtn.onclick = showVirus;
+document.body.append(testBtn);
+*/
+
+//showVirus();
+
+function showVirus() {
+  let virusClicked = false;
+
+  const virus = document.createElement("div");
+  virus.innerHTML = `<img src="/2-battle-game/assets/virus.svg" width="30px;">`;
+  virus.style.filter = "drop-shadow(5px 5px 5px white)";
+
+  virus.addEventListener("click", function () {
+    yourPokemon.stats.hp -= 4;
+    hpAnimation("damage", 4, yourPokemonImg);
+    showHp();
+    virus.remove();
+  });
+
+  randomPlacement(virus);
+  battleGround.append(virus);
+
+  setTimeout(function () {
+    if (!virusClicked) {
+      virus.remove();
+    }
+  }, 2000);
+}
+
+function randomPlacement(item) {
+  item.style.position = "absolute";
+  const top = randomPercent();
+  const left = randomPercent();
+  item.style.top = top;
+  item.style.left = left;
+}
 
 // BERRY BOOSTER
 function berryBooster() {
@@ -421,9 +469,11 @@ function berryBooster() {
   if (berryClicked) {
     yourPokemon.stats.hp += berryBoost;
     hpAnimation("berryBoost", berryBoost, yourPokemonImg);
+    showHp();
   } else if (!berryClicked) {
     enemyPokemon.stats.hp += berryBoost;
     hpAnimation("berryBoost", berryBoost, enemyPokemonImg);
+    showHp();
   }
 }
 
@@ -446,16 +496,16 @@ function endGame() {
   message.innerHTML = "";
 
   //Start nytt spill-knapp
-  const startNewGameBtn = document.createElement("button");
-  startNewGameBtn.classList.add("btn");
-  startNewGameBtn.innerHTML = "Start nytt spill";
-  startNewGameBtn.addEventListener("click", function () {
+  const goBackBtn = document.createElement("button");
+  goBackBtn.classList.add("btn");
+  goBackBtn.innerHTML = "Tilbake";
+  goBackBtn.addEventListener("click", function () {
     location.reload();
   });
 
-  message.append(startNewGameBtn);
+  message.append(goBackBtn);
 }
 
-// PAGE LOAD
+// PAGE LOAD ----------------------------------------
 fetchAndShowPokemons();
 fetchBerries();

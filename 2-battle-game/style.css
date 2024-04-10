@@ -5,7 +5,7 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 30px;
+  gap: 10px;
 }
 
 #select-pokemon-container {
@@ -19,6 +19,7 @@ body {
 
 #hint {
   margin: 0;
+  text-align: center;
 }
 
 #game-container {
@@ -105,6 +106,7 @@ body {
 }
 .counter-attack {
   transform: rotate(-20deg);
+  filter: drop-shadow(5px 5px 5px rgba(255, 255, 255))"
 }
 
 @keyframes slide-up {
