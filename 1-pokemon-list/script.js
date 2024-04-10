@@ -38,6 +38,7 @@ const typeColors = {
 };
 
 // FETCH ----------------------------------------------------
+// Fetch typer
 async function fetchTypes() {
   try {
     const allTypes = [];
@@ -53,7 +54,7 @@ async function fetchTypes() {
   }
 }
 
-// FETCH POKEMONS (50 stk)
+// Fetch 50 pokemons
 async function fetchAndShowPokemons() {
   try {
     for (let i = 1; i < 51; i++) {
@@ -73,6 +74,7 @@ async function fetchAndShowPokemons() {
   }
 }
 
+// Hent lagrede selvlagde pokemons
 function pushMyPokemonsToAllPokemons() {
   myPokemons = JSON.parse(localStorage.getItem("myPokemons")) || [];
   allPokemons = myPokemons.concat(fetchedPokemons); //lært av Anders
@@ -166,7 +168,7 @@ async function createAndShowFilter() {
   });
 }
 
-// TOGGLE FILTER-KNAPP
+// Toggle filter knapp
 function toggleFilterButton(clickedBtn) {
   filterButtons.forEach((button) =>
     button === clickedBtn
@@ -190,26 +192,19 @@ function makeNewPokemon() {
   };
 
   //feilhåndtering
-  const duplicate = allPokemons.find(
-    (pokemon) =>
-      pokemon.name === newPokemon.name && pokemon.type === newPokemon.type
-  );
+  const duplicate = checkForDuplicates(newPokemon, allPokemons);
   if (duplicate) {
     alert("Denne pokemonen finnes allerede.");
-    return;
   } else if (!newPokemonName || !newPokemonType) {
     alert("Du må skrive både navn og type for din nye pokemon.");
-    return;
-  } else if (!allTypes.includes(newPokemonType)) {
-    alert("Denne typen finnes ikke.");
-    return;
+  } else {
+    addPokemon(newPokemon);
+    newPokemonNameInput.value = "";
+    newPokemonTypeInput.value = "";
   }
-
-  addPokemon(newPokemon);
-  newPokemonNameInput.value = "";
-  newPokemonTypeInput.value = "";
 }
 
+// Legg til ny pokemon
 function addPokemon(newPokemon) {
   myPokemons.unshift(newPokemon);
   updateLocalStorage("myPokemons", myPokemons);
@@ -221,26 +216,21 @@ function addPokemon(newPokemon) {
 // LAGRE POKEMONS ----------------------------------------------------
 function savePokemon(index) {
   savedPokemons = JSON.parse(localStorage.getItem("savedPokemons")) || [];
-  const chosenPokemon = allPokemons[index];
+  const clickedPokemon = allPokemons[index];
 
-  //feilhåndtering
-  const duplicate = savedPokemons.find(
-    (pokemon) =>
-      pokemon.name === chosenPokemon.name && pokemon.type === chosenPokemon.type
-  );
+  const duplicate = checkForDuplicates(clickedPokemon, savedPokemons);
   if (duplicate) {
     alert("Denne pokemonen har du allerede lagret.");
   } else if (savedPokemons.length >= 5) {
     alert("Du kan bare lagre 5 pokemons. Fjern en for å lagre ny.");
+  } else {
+    savedPokemons.unshift(clickedPokemon);
+    updateLocalStorage("savedPokemons", savedPokemons);
+    showSavedPokemons();
   }
-
-  //lagrer pokemon
-  savedPokemons.unshift(chosenPokemon);
-  updateLocalStorage("savedPokemons", savedPokemons);
-  showSavedPokemons();
 }
 
-// VIS LAGREDE POKEMONS
+// Vis lagrede pokemons
 async function showSavedPokemons() {
   savedPokemonContainer.innerHTML = "";
   let cardCounter = 0;
@@ -279,14 +269,14 @@ async function showSavedPokemons() {
   }
 }
 
-// FJERN POKEMON FRA LAGREDE
+// Fjern / slett fra lagrede pokemons
 function removeFromSaved(index) {
   savedPokemons.splice(index, 1);
   updateLocalStorage("savedPokemons", savedPokemons);
   showSavedPokemons();
 }
 
-// SLETT POKEMON ALLE STEDER ----------------------------------------------------
+// SLETT POKEMON ----------------------------------------------------
 function deletePokemon(index) {
   savedPokemons = filterPokemonArray(index, savedPokemons);
   updateLocalStorage("savedPokemons", savedPokemons);
@@ -300,13 +290,14 @@ function deletePokemon(index) {
   showSavedPokemons();
 }
 
+// Filtrer ut / slett pokemon
 function filterPokemonArray(index, array) {
-  const selectedPokemon = allPokemons[index];
+  const pokemonToRemove = allPokemons[index];
 
   array = array.filter(
     (pokemon) =>
-      pokemon.name !== selectedPokemon.name ||
-      pokemon.type !== selectedPokemon.type
+      pokemon.name !== pokemonToRemove.name ||
+      pokemon.type !== pokemonToRemove.type
   );
   return array;
 }
@@ -314,11 +305,11 @@ function filterPokemonArray(index, array) {
 // REDIGER POKEMON ----------------------------------------------------
 function editPokemon(index) {
   const editedPokemon = getNewNameAndType();
-  const selectedPokemon = allPokemons[index];
+  const originalPokemon = allPokemons[index];
 
   editDuplicates(
     savedPokemons,
-    selectedPokemon,
+    originalPokemon,
     editedPokemon.name,
     editedPokemon.type
   );
@@ -326,60 +317,69 @@ function editPokemon(index) {
 
   editDuplicates(
     myPokemons,
-    selectedPokemon,
+    originalPokemon,
     editedPokemon.name,
     editedPokemon.type
   );
   updateLocalStorage("myPokemons", myPokemons);
   pushMyPokemonsToAllPokemons();
 
-  selectedPokemon.name = editedPokemon.name;
-  selectedPokemon.type = editedPokemon.type;
+  originalPokemon.name = editedPokemon.name;
+  originalPokemon.type = editedPokemon.type;
   showSavedPokemons();
   showPokemons();
 }
 
+// Hent nytt navn og type
 function getNewNameAndType() {
   const newName = prompt("Skriv inn nytt navn:").toLowerCase();
   const newType = prompt("Skriv inn ny type:").toLowerCase();
+  const editedPokemon = {
+    name: newName,
+    type: newType,
+  };
 
-  //feilhåndtering
-  const duplicate = allPokemons.find(
-    (pokemon) => pokemon.name === newName && pokemon.type === newType
-  );
+  const duplicate = checkForDuplicates(editedPokemon, allPokemons);
 
   if (duplicate) {
-    //sjekker om den allerede finnes
     alert("Denne pokemonen finnes allerede.");
   } else if (!newName || !newType) {
-    //sjekker at feltene er fylt ut
     alert("Du må fylle ut begge feltene.");
   } else if (!allTypes.includes(newType)) {
-    //sjekker at typen finnes
     alert("Denne typen finnes ikke.");
+  } else {
+    return editedPokemon;
   }
-  return { name: newName, type: newType };
 }
 
-function editDuplicates(array, selectedPokemon, name, type) {
-  const duplicate = array.find(
-    (pokemon) =>
-      pokemon.name === selectedPokemon.name &&
-      pokemon.type === selectedPokemon.type
-  );
+// Rediger duplikater
+function editDuplicates(array, originalPokemon, newName, newType) {
+  const duplicate = checkForDuplicates(originalPokemon, array);
 
   if (duplicate) {
-    duplicate.name = name;
-    duplicate.type = type;
+    duplicate.name = newName;
+    duplicate.type = newType;
   }
 }
 
-// LOCAL STORAGE LAGRING ----------------------------------------------------
+// GENERISKE FUNKSJONER ------------------------------------
 function updateLocalStorage(key, value) {
   localStorage.setItem(key, JSON.stringify(value));
 }
 
-// PAGE LOAD
+function checkForDuplicates(pokemonToCheck, array) {
+  const duplicate = array.find(
+    (pokemon) =>
+      pokemon.name === pokemonToCheck.name &&
+      pokemon.type === pokemonToCheck.type
+  );
+
+  if (duplicate) {
+    return duplicate;
+  }
+}
+
+// PAGE LOAD --------------------------------------------
 fetchAndShowPokemons();
 showSavedPokemons();
 createAndShowFilter();
