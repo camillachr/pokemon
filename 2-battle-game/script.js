@@ -10,9 +10,7 @@ const enemyPokemonHP = document.querySelector("#enemy-pokemon-health");
 const movePanel = document.querySelector("#move-panel");
 const message = document.querySelector("#message");
 const yourPokemonImg = document.createElement("div");
-yourPokemonImg.classList.add("pokemon");
 const enemyPokemonImg = document.createElement("div");
-enemyPokemonImg.classList.add("pokemon");
 
 const positiveFeedback = ["Rått! ", "Wow! ", "Godt jobba! ", "Fantastisk!"];
 const negativeFeedback = ["Ouch, ", "Pass opp, ", "Aaiiii, ", "Oouufff, "];
@@ -75,7 +73,7 @@ async function fetchAndUpdateMoveDetails(pokemon) {
     }
     //erstatter move url med fetchede detaljer
     pokemon.moves = movesWithDetails;
-    pokemons[2].moves[1].power = 120; //liten manuell fix, api verdi var null
+    pokemons[2].moves[1].power = 120; //liten manuell fix, api verdien var null
   } catch (error) {
     console.error("Kunne ikke hente moves", error);
   }
@@ -256,8 +254,6 @@ function updateMovePanel() {
 // SELVE SPILLET  -------------------------------------------
 // Attack
 function attack(move) {
-  berryClicked = false;
-
   const damage = calculateAndDoDamage(move, yourPokemon, enemyPokemon);
 
   const feedback = chooseRandomItem(positiveFeedback);
@@ -346,12 +342,21 @@ function checkHealth() {
   }
 }
 
-// Animasjon når pokemonen gjør et move
+// Animasjon når pokemonen gjør et move //REF
 function moveAnimation(pokemonImg, attackType) {
-  // Animasjonen avhenger av om det er attack eller counter-attack
-  pokemonImg.classList.add(`${attackType}`);
+  // Overgangseffekt for animasjonen
+  pokemonImg.style.transition = "transform 0.3s ease";
+
+  // Retningen på rotasjon avhenger av om det er attack eller counter-attack
+  if (attackType == "attack") {
+    pokemonImg.style.transform = "rotate(20deg)";
+  } else if (attackType == "counter-attack") {
+    pokemonImg.style.transform = "rotate(-20deg)";
+  }
+
   setTimeout(function () {
-    pokemonImg.classList.remove(`${attackType}`);
+    // fjerner stylingen igjen
+    pokemonImg.style.transform = "";
   }, 500);
 }
 
@@ -371,8 +376,8 @@ function hpAnimation(type, change, pokemonImg) {
   }
 
   changeTxt.style.position = "absolute";
-  changeTxt.style.left = "50%"; // KAN DEN FJERNES?
-  changeTxt.style.transform = "translate(-50%, -50%)"; // sentrering
+  changeTxt.style.left = "50%";
+  changeTxt.style.transform = "translate(-50%, -50%)";
   changeTxt.style.fontWeight = "bold";
   changeTxt.style.animation = "slide-up 2s forwards";
 
@@ -391,33 +396,32 @@ function showBerry() {
 
   const berryImg = document.createElement("div");
   berryImg.innerHTML = `<img src="${randomBerry.img}" width="40px;">`;
-  randomPlacement(berryImg);
 
   berryImg.addEventListener("click", function () {
     berryClicked = true;
-    berryBooster(randomBerry);
+    berryBooster(yourPokemon);
     berryImg.remove();
   });
 
+  randomPlacement(berryImg);
   battleGround.append(berryImg);
 
   //fjern etter 2 sek og motstander får berryBooster
   setTimeout(function () {
     if (!berryClicked) {
       berryImg.remove();
-      berryBooster();
+      berryBooster(enemyPokemon);
+    } else {
+      berryClicked = false;
     }
   }, 2000);
 }
 
 // Vis virus
 function showVirus() {
-  let virusClicked = false;
-
   const virus = document.createElement("div");
   virus.innerHTML = `<img src="/2-battle-game/assets/virus.svg" width="30px;">`;
   virus.style.filter = "drop-shadow(5px 5px 5px white)";
-  randomPlacement(virus);
 
   virus.addEventListener("click", function () {
     yourPokemon.stats.hp -= 4;
@@ -426,12 +430,11 @@ function showVirus() {
     virus.remove();
   });
 
+  randomPlacement(virus);
   battleGround.append(virus);
 
   setTimeout(function () {
-    if (!virusClicked) {
-      virus.remove();
-    }
+    virus.remove();
   }, 2000);
 }
 
@@ -445,16 +448,16 @@ function randomPlacement(item) {
 }
 
 // Berry booster
-function berryBooster() {
+function berryBooster(pokemonToBoost) {
   //generer random berryBoost mellom 1 og 4
   const berryBoost = Math.floor(Math.random() * 4) + 1;
 
   //sjekker om bruker rakk å klikke eller ikke, og tildeler boost deretter
-  if (berryClicked) {
+  if (pokemonToBoost == yourPokemon) {
     yourPokemon.stats.hp += berryBoost;
     hpAnimation("berryBoost", berryBoost, yourPokemonImg);
     showHp();
-  } else if (!berryClicked) {
+  } else if (pokemonToBoost == enemyPokemon) {
     enemyPokemon.stats.hp += berryBoost;
     hpAnimation("berryBoost", berryBoost, enemyPokemonImg);
     showHp();
@@ -464,7 +467,7 @@ function berryBooster() {
 // Generer random prosent for plassering av berry
 function randomPercent() {
   // % mellom 10 og 90 (slik at berry ikke vises delvis utenfor vinduet)
-  const randomPercent = Math.floor(Math.random() * 80 + 10) + "%";
+  const randomPercent = Math.floor(Math.random() * 81 + 10) + "%";
   return randomPercent;
 }
 
