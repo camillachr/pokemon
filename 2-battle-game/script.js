@@ -417,6 +417,23 @@ function showBerry() {
   }, 2000);
 }
 
+// Berry booster
+function berryBooster(pokemonToBoost) {
+  //generer random berryBoost mellom 1 og 4
+  const berryBoost = Math.floor(Math.random() * 4) + 1;
+
+  //sjekker om bruker rakk å klikke eller ikke, og tildeler boost deretter
+  if (pokemonToBoost == yourPokemon) {
+    yourPokemon.stats.hp += berryBoost;
+    hpAnimation("berryBoost", berryBoost, yourPokemonImg);
+    showHp();
+  } else if (pokemonToBoost == enemyPokemon) {
+    enemyPokemon.stats.hp += berryBoost;
+    hpAnimation("berryBoost", berryBoost, enemyPokemonImg);
+    showHp();
+  }
+}
+
 // Vis virus
 function showVirus() {
   const virus = document.createElement("div");
@@ -438,7 +455,7 @@ function showVirus() {
   }, 2000);
 }
 
-// Random plassering av et elemet (berry eller virus)
+// Random plassering av berry / virus
 function randomPlacement(item) {
   item.style.position = "absolute";
   const top = randomPercent();
@@ -447,24 +464,7 @@ function randomPlacement(item) {
   item.style.left = left;
 }
 
-// Berry booster
-function berryBooster(pokemonToBoost) {
-  //generer random berryBoost mellom 1 og 4
-  const berryBoost = Math.floor(Math.random() * 4) + 1;
-
-  //sjekker om bruker rakk å klikke eller ikke, og tildeler boost deretter
-  if (pokemonToBoost == yourPokemon) {
-    yourPokemon.stats.hp += berryBoost;
-    hpAnimation("berryBoost", berryBoost, yourPokemonImg);
-    showHp();
-  } else if (pokemonToBoost == enemyPokemon) {
-    enemyPokemon.stats.hp += berryBoost;
-    hpAnimation("berryBoost", berryBoost, enemyPokemonImg);
-    showHp();
-  }
-}
-
-// Generer random prosent for plassering av berry
+// Generer random prosent for plassering av berry / virus
 function randomPercent() {
   // % mellom 10 og 90 (slik at berry ikke vises delvis utenfor vinduet)
   const randomPercent = Math.floor(Math.random() * 81 + 10) + "%";
