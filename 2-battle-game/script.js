@@ -342,7 +342,7 @@ function checkHealth() {
   }
 }
 
-// Animasjon når pokemonen gjør et move //REF
+// Animasjon når pokemonen gjør et move
 function moveAnimation(pokemonImg, attackType) {
   // Overgangseffekt for animasjonen
   pokemonImg.style.transition = "transform 0.3s ease";
