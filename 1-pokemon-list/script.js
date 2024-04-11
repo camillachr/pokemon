@@ -41,9 +41,11 @@ const typeColors = {
 async function fetchAndShowPokemons() {
   try {
     for (let i = 1; i < 51; i++) {
-      const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${i}`);
+      const url = `https://pokeapi.co/api/v2/pokemon/${i}`;
+      const response = await fetch(url);
       const data = await response.json();
       const pokemon = {
+        id: data.id,
         name: data.name,
         type: data.types[0].type.name,
         imgUrl: data.sprites.front_default,
@@ -68,7 +70,8 @@ async function fetchTypes() {
   try {
     const allTypes = [];
     for (let i = 1; i < 19; i++) {
-      const response = await fetch(`https://pokeapi.co/api/v2/type/${i}`);
+      const url = `https://pokeapi.co/api/v2/type/${i}`;
+      const response = await fetch(url);
       const data = await response.json();
       const typeName = data.name;
       allTypes.push(typeName);
@@ -181,21 +184,23 @@ async function showPokemons() {
 }
 
 // LAG DIN EGEN POKEMON ----------------------------------------------------
+
 function makeNewPokemon() {
   const newPokemonNameInput = document.querySelector("#new-pokemon-name");
   const newPokemonTypeInput = document.querySelector("#new-pokemon-type");
-
   const newPokemonName = newPokemonNameInput.value.toLowerCase();
   const newPokemonType = newPokemonTypeInput.value.toLowerCase();
+  const newPokemonId = setNewPokemonID();
 
   const newPokemon = {
+    id: newPokemonId,
     name: newPokemonName.toLowerCase(),
     type: newPokemonType.toLowerCase(),
     imgUrl: "/1-pokemon-list/assets/pokeball.png",
   };
 
   //feilhåndtering
-  const duplicate = checkForDuplicates(newPokemon, allPokemons);
+  const duplicate = checkForDuplicates("nameAndType", newPokemon, allPokemons);
   if (duplicate) {
     alert("Denne pokemonen finnes allerede.");
   } else if (!newPokemonName || !newPokemonType) {
@@ -205,6 +210,17 @@ function makeNewPokemon() {
     newPokemonNameInput.value = "";
     newPokemonTypeInput.value = "";
   }
+}
+
+// Lager ny ID
+function setNewPokemonID() {
+  let newId;
+  if (myPokemons.length == 0) {
+    newId = 500;
+  } else {
+    newId = myPokemons[0].id + 1; //Nyeste pokemon = index 0 pga unshift
+  }
+  return newId;
 }
 
 // Legg til ny pokemon
@@ -221,7 +237,7 @@ function savePokemon(index) {
   savedPokemons = JSON.parse(localStorage.getItem("savedPokemons")) || [];
   const clickedPokemon = allPokemons[index];
 
-  const duplicate = checkForDuplicates(clickedPokemon, savedPokemons);
+  const duplicate = checkForDuplicates("id", clickedPokemon, savedPokemons);
   if (duplicate) {
     alert("Denne pokemonen har du allerede lagret.");
   } else if (savedPokemons.length >= 5) {
@@ -281,32 +297,28 @@ function removeFromSaved(index) {
 
 // SLETT POKEMON ----------------------------------------------------
 function deletePokemon(index) {
-  savedPokemons = filterPokemonArray(index, savedPokemons);
+  const pokemonToDelete = allPokemons[index];
+
+  // Sletter fra savedPokemons
+  savedPokemons = savedPokemons.filter(
+    (pokemon) => pokemon.id !== pokemonToDelete.id
+  );
   updateLocalStorage("savedPokemons", savedPokemons);
 
-  myPokemons = filterPokemonArray(index, myPokemons);
+  // Sletter fra myPokemons
+  myPokemons = myPokemons.filter(
+    (pokemon) => pokemon.id !== pokemonToDelete.id
+  );
   updateLocalStorage("myPokemons", myPokemons);
 
-  allPokemons = filterPokemonArray(index, allPokemons);
+  // Sletter fra allPokemons
+  allPokemons.splice(index, 1);
 
   showPokemons();
   showSavedPokemons();
 }
 
-// Filtrer ut / slett pokemon
-function filterPokemonArray(index, array) {
-  const pokemonToRemove = allPokemons[index];
-
-  array = array.filter(
-    (pokemon) =>
-      pokemon.name !== pokemonToRemove.name ||
-      pokemon.type !== pokemonToRemove.type
-  );
-  return array;
-}
-
 // REDIGER POKEMON ----------------------------------------------------
-
 // Hent nytt navn og type
 function getNewNameAndType() {
   const newName = prompt("Skriv inn nytt navn:").toLowerCase();
@@ -316,7 +328,11 @@ function getNewNameAndType() {
     type: newType,
   };
 
-  const duplicate = checkForDuplicates(editedPokemon, allPokemons);
+  const duplicate = checkForDuplicates(
+    "nameAndType",
+    editedPokemon,
+    allPokemons
+  );
 
   if (duplicate) {
     alert("Denne pokemonen finnes allerede.");
@@ -334,36 +350,30 @@ function editPokemon(index) {
   const editedPokemon = getNewNameAndType();
   const originalPokemon = allPokemons[index];
 
-  editDuplicates(
-    savedPokemons,
-    originalPokemon,
-    editedPokemon.name,
-    editedPokemon.type
-  );
-  updateLocalStorage("savedPokemons", savedPokemons);
-
-  editDuplicates(
-    myPokemons,
-    originalPokemon,
-    editedPokemon.name,
-    editedPokemon.type
-  );
-  updateLocalStorage("myPokemons", myPokemons);
-  pushMyPokemonsToAllPokemons();
-
+  // Endrer pokemonen
   originalPokemon.name = editedPokemon.name;
   originalPokemon.type = editedPokemon.type;
+
+  // Endrer den i savedPokemons
+  editDuplicates(originalPokemon, savedPokemons);
+  updateLocalStorage("savedPokemons", savedPokemons);
+
+  // Endrer den i myPokemons
+  editDuplicates(originalPokemon, myPokemons);
+  updateLocalStorage("myPokemons", myPokemons);
+
+  pushMyPokemonsToAllPokemons();
   showSavedPokemons();
   showPokemons();
 }
 
 // Rediger duplikater
-function editDuplicates(array, originalPokemon, newName, newType) {
-  const duplicate = checkForDuplicates(originalPokemon, array);
+function editDuplicates(updatedPokemon, array) {
+  const duplicate = checkForDuplicates("id", updatedPokemon, array);
 
   if (duplicate) {
-    duplicate.name = newName;
-    duplicate.type = newType;
+    duplicate.name = updatedPokemon.name;
+    duplicate.type = updatedPokemon.type;
   }
 }
 
@@ -372,12 +382,18 @@ function updateLocalStorage(key, value) {
   localStorage.setItem(key, JSON.stringify(value));
 }
 
-function checkForDuplicates(pokemonToCheck, array) {
-  const duplicate = array.find(
-    (pokemon) =>
-      pokemon.name === pokemonToCheck.name &&
-      pokemon.type === pokemonToCheck.type
-  );
+function checkForDuplicates(attributeToCheck, pokemonToCheck, array) {
+  let duplicate;
+
+  if (attributeToCheck == "nameAndType") {
+    duplicate = array.find(
+      (pokemon) =>
+        pokemon.name === pokemonToCheck.name &&
+        pokemon.type === pokemonToCheck.type
+    );
+  } else if (attributeToCheck == "id") {
+    duplicate = array.find((pokemon) => pokemon.id === pokemonToCheck.id);
+  }
 
   if (duplicate) {
     return duplicate;
