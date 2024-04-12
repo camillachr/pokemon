@@ -1,6 +1,5 @@
 // GLOBALE VARIABLER
 const filterContainer = document.querySelector("#filter-container");
-let filterButtons = []; //knappene opprettes dynamisk og lagres i denne
 const pokemonContainer = document.querySelector("#pokemon-container");
 const savedPokemonContainer = document.querySelector(
   "#saved-pokemon-container"
@@ -8,11 +7,6 @@ const savedPokemonContainer = document.querySelector(
 const newPokemonBtn = document
   .querySelector("#new-pokemon-btn")
   .addEventListener("click", makeNewPokemon);
-
-let allPokemons = [];
-let savedPokemons = [];
-let myPokemons = [];
-let fetchedPokemons = [];
 
 const typeColors = {
   normal: "#A8A77A",
@@ -35,6 +29,11 @@ const typeColors = {
   fairy: "#D685AD",
 };
 
+let filterButtons = []; //filter-btns opprettes dynamisk og lagres i denne
+let allPokemons = []; // Alle
+let savedPokemons = []; // Mine lagrede "favoritter"
+let myPokemons = []; // Lag-din-egen
+
 // FETCH ----------------------------------------------------
 
 // Fetch 50 pokemons
@@ -45,12 +44,12 @@ async function fetchAndShowPokemons() {
       const response = await fetch(url);
       const data = await response.json();
       const pokemon = {
-        id: data.id,
         name: data.name,
         type: data.types[0].type.name,
+        id: data.id,
         imgUrl: data.sprites.front_default,
       };
-      fetchedPokemons.push(pokemon);
+      allPokemons.push(pokemon);
     }
     pushMyPokemonsToAllPokemons();
     showPokemons();
@@ -59,10 +58,15 @@ async function fetchAndShowPokemons() {
   }
 }
 
-// Hent lagrede selvlagde pokemons
+// Hent lagrede lag-din-egen pokemons
 function pushMyPokemonsToAllPokemons() {
   myPokemons = JSON.parse(localStorage.getItem("myPokemons")) || [];
-  allPokemons = myPokemons.concat(fetchedPokemons);
+
+  // legger myPokemons øverst i allPokemons, med de nyeste først
+  const myPokemonsReversed = myPokemons.slice().reverse(); //chatGPT-hjelp
+  myPokemonsReversed.forEach((pokemon) => {
+    allPokemons.unshift(pokemon);
+  });
 }
 
 // Fetch typer
@@ -89,7 +93,7 @@ async function createAndShowFilter() {
   for (let i = 0; i < allTypes.length; i++) {
     const filterBtn = document.createElement("button");
     filterBtn.classList.add("filter-btn", "btn");
-    filterBtn.setAttribute("data-type", `${allTypes[i]}`);
+    filterBtn.setAttribute("data-type", `${allTypes[i]}`); //chatgpt-hjelp
     filterBtn.innerHTML = allTypes[i];
 
     const filterBtnContainer = document.querySelector("#filter-btn-container");
@@ -110,7 +114,7 @@ async function createAndShowFilter() {
 function toggleFilterButton(clickedBtn) {
   filterButtons.forEach((button) => {
     if (button === clickedBtn) {
-      clickedBtn.classList.toggle("active");
+      clickedBtn.classList.toggle("active"); //Toggle lært av Anders
     } else {
       button.classList.remove("active");
     }
@@ -177,7 +181,6 @@ async function showPokemons() {
     }
   });
 
-  //Feilhåndtering
   if (cardCounter === 0) {
     pokemonContainer.innerHTML = `Beklager, finner ingen Pokemons.`;
   }
@@ -188,22 +191,19 @@ async function showPokemons() {
 function makeNewPokemon() {
   const newPokemonNameInput = document.querySelector("#new-pokemon-name");
   const newPokemonTypeInput = document.querySelector("#new-pokemon-type");
-  const newPokemonName = newPokemonNameInput.value.toLowerCase();
-  const newPokemonType = newPokemonTypeInput.value.toLowerCase();
+
+  const newPokemonName = newPokemonNameInput.value.trim().toLowerCase(); //trim lært av Anders
+  const newPokemonType = newPokemonTypeInput.value;
   const newPokemonId = setNewPokemonID();
 
   const newPokemon = {
     id: newPokemonId,
-    name: newPokemonName.toLowerCase(),
-    type: newPokemonType.toLowerCase(),
+    name: newPokemonName,
+    type: newPokemonType,
     imgUrl: "/1-pokemon-list/assets/pokeball.png",
   };
 
-  //feilhåndtering
-  const duplicate = checkForDuplicates("nameAndType", newPokemon, allPokemons);
-  if (duplicate) {
-    alert("Denne pokemonen finnes allerede.");
-  } else if (!newPokemonName || !newPokemonType) {
+  if (!newPokemonName || !newPokemonType) {
     alert("Du må skrive både navn og type for din nye pokemon.");
   } else {
     addPokemon(newPokemon);
@@ -225,9 +225,9 @@ function setNewPokemonID() {
 
 // Legg til ny pokemon
 function addPokemon(newPokemon) {
+  allPokemons.unshift(newPokemon);
   myPokemons.unshift(newPokemon);
   updateLocalStorage("myPokemons", myPokemons);
-  pushMyPokemonsToAllPokemons();
   toggleFilterButton();
   showPokemons();
 }
@@ -237,7 +237,9 @@ function savePokemon(index) {
   savedPokemons = JSON.parse(localStorage.getItem("savedPokemons")) || [];
   const clickedPokemon = allPokemons[index];
 
-  const duplicate = checkForDuplicates("id", clickedPokemon, savedPokemons);
+  const duplicate = savedPokemons.find(
+    (pokemon) => pokemon.id === clickedPokemon.id
+  );
   if (duplicate) {
     alert("Denne pokemonen har du allerede lagret.");
   } else if (savedPokemons.length >= 5) {
@@ -253,7 +255,6 @@ function savePokemon(index) {
 async function showSavedPokemons() {
   savedPokemonContainer.innerHTML = "";
   let cardCounter = 0;
-
   savedPokemons = JSON.parse(localStorage.getItem("savedPokemons")) || [];
 
   savedPokemons.forEach((pokemon, index) => {
@@ -282,7 +283,6 @@ async function showSavedPokemons() {
     savedPokemonContainer.append(card);
   });
 
-  //Feilhåndtering
   if (cardCounter === 0) {
     savedPokemonContainer.innerHTML = `Ingen lagrede pokemons.`;
   }
@@ -321,22 +321,15 @@ function deletePokemon(index) {
 // REDIGER POKEMON ----------------------------------------------------
 // Hent nytt navn og type
 function getNewNameAndType() {
-  const newName = prompt("Skriv inn nytt navn:").toLowerCase();
-  const newType = prompt("Skriv inn ny type:").toLowerCase();
+  //trim lært av Anders
+  const newName = prompt("Skriv inn nytt navn:").trim().toLowerCase();
+  const newType = prompt("Skriv inn ny type:").trim().toLowerCase();
   const editedPokemon = {
     name: newName,
     type: newType,
   };
 
-  const duplicate = checkForDuplicates(
-    "nameAndType",
-    editedPokemon,
-    allPokemons
-  );
-
-  if (duplicate) {
-    alert("Denne pokemonen finnes allerede.");
-  } else if (!newName || !newType) {
+  if (!newName || !newType) {
     alert("Du må fylle ut begge feltene.");
   } else if (!allTypes.includes(newType)) {
     alert("Denne typen finnes ikke.");
@@ -350,15 +343,15 @@ function editPokemon(index) {
   const editedPokemon = getNewNameAndType();
   const originalPokemon = allPokemons[index];
 
-  // Endrer pokemonen
+  // Redigerer pokemon i allPokemons
   originalPokemon.name = editedPokemon.name;
   originalPokemon.type = editedPokemon.type;
 
-  // Endrer den i savedPokemons
+  //  Redigerer pokemon i savedPokemons
   editDuplicates(originalPokemon, savedPokemons);
   updateLocalStorage("savedPokemons", savedPokemons);
 
-  // Endrer den i myPokemons
+  //  Redigerer pokemon i myPokemons
   editDuplicates(originalPokemon, myPokemons);
   updateLocalStorage("myPokemons", myPokemons);
 
@@ -369,7 +362,7 @@ function editPokemon(index) {
 
 // Rediger duplikater
 function editDuplicates(updatedPokemon, array) {
-  const duplicate = checkForDuplicates("id", updatedPokemon, array);
+  const duplicate = array.find((pokemon) => pokemon.id === updatedPokemon.id);
 
   if (duplicate) {
     duplicate.name = updatedPokemon.name;
@@ -377,27 +370,9 @@ function editDuplicates(updatedPokemon, array) {
   }
 }
 
-// GENERISKE FUNKSJONER ------------------------------------
+// LOCAL STORAGE ------------------------------------
 function updateLocalStorage(key, value) {
   localStorage.setItem(key, JSON.stringify(value));
-}
-
-function checkForDuplicates(attributeToCheck, pokemonToCheck, array) {
-  let duplicate;
-
-  if (attributeToCheck == "nameAndType") {
-    duplicate = array.find(
-      (pokemon) =>
-        pokemon.name === pokemonToCheck.name &&
-        pokemon.type === pokemonToCheck.type
-    );
-  } else if (attributeToCheck == "id") {
-    duplicate = array.find((pokemon) => pokemon.id === pokemonToCheck.id);
-  }
-
-  if (duplicate) {
-    return duplicate;
-  }
 }
 
 // PAGE LOAD --------------------------------------------
