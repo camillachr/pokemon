@@ -8,6 +8,7 @@ const newPokemonBtn = document
   .querySelector("#new-pokemon-btn")
   .addEventListener("click", makeNewPokemon);
 
+//chatgpt-hjelp med typeColors:
 const typeColors = {
   normal: "#A8A77A",
   fire: "#EE8130",
@@ -321,7 +322,6 @@ function deletePokemon(index) {
 // REDIGER POKEMON ----------------------------------------------------
 // Hent nytt navn og type
 function getNewNameAndType() {
-  //trim lært av Anders
   const newName = prompt("Skriv inn nytt navn:").trim().toLowerCase();
   const newType = prompt("Skriv inn ny type:").trim().toLowerCase();
   const editedPokemon = {

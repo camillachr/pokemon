@@ -267,6 +267,7 @@ function attack(move) {
   moveAnimation(yourPokemonImg, "attack");
 
   if (!gameIsOver) {
+    //setTimeout lært av Anders (mulignes Amina og)
     setTimeout(function () {
       counterAttack();
     }, 2000);
@@ -349,9 +350,9 @@ function moveAnimation(pokemonImg, attackType) {
 
   // Retningen på rotasjon avhenger av om det er attack eller counter-attack
   if (attackType == "attack") {
-    pokemonImg.style.transform = "rotate(20deg)";
+    pokemonImg.style.transform = "rotate(20deg)"; //chatgpt-hjelp
   } else if (attackType == "counter-attack") {
-    pokemonImg.style.transform = "rotate(-20deg)";
+    pokemonImg.style.transform = "rotate(-20deg)"; //chatgpt-hjelp
   }
 
   setTimeout(function () {
@@ -375,11 +376,11 @@ function hpAnimation(type, change, pokemonImg) {
     changeTxt.style.textShadow = " 1px 1px 2px black";
   }
 
+  changeTxt.style.fontWeight = "bold";
   changeTxt.style.position = "absolute";
   changeTxt.style.left = "50%";
-  changeTxt.style.transform = "translate(-50%, -50%)";
-  changeTxt.style.fontWeight = "bold";
-  changeTxt.style.animation = "slide-up 2s forwards";
+  changeTxt.style.transform = "translate(-50%, -50%)"; //chatgpt-hjelp
+  changeTxt.style.animation = "slide-up 2s forwards"; //chatgpt-hjelp
 
   pokemonImg.append(changeTxt);
 
@@ -464,9 +465,9 @@ function randomPlacement(item) {
   item.style.left = left;
 }
 
-// Generer random prosent for plassering av berry / virus
 function randomPercent() {
   // % mellom 10 og 90 (slik at berry ikke vises delvis utenfor vinduet)
+  // Lært denne metoden av Anders
   const randomPercent = Math.floor(Math.random() * 81 + 10) + "%";
   return randomPercent;
 }
