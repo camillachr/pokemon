@@ -295,11 +295,12 @@ function counterAttack() {
   if (!gameIsOver) {
     setTimeout(function () {
       // 60% sjanse for at berry/virus blir lagt ut
+      // bittelitt chatgpt-hjelp med logikken her og
       let chance = Math.random();
       if (chance < 0.6) {
         let virusChance = Math.random();
-        // 1/3 av tilfellene legges virus ut
-        if (virusChance < 0.33) {
+        // 20% av tilfellene legges virus ut
+        if (virusChance < 0.2) {
           showVirus();
         } else {
           showBerry();
