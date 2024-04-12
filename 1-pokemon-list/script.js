@@ -355,7 +355,6 @@ function editPokemon(index) {
   editDuplicates(originalPokemon, myPokemons);
   updateLocalStorage("myPokemons", myPokemons);
 
-  pushMyPokemonsToAllPokemons();
   showSavedPokemons();
   showPokemons();
 }
